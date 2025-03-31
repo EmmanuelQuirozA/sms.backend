@@ -1,29 +1,55 @@
 package com.monarchsolutions.sms.dto.user;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
-import java.util.Date;
+import java.time.LocalDate;
+
+import com.monarchsolutions.sms.validation.AdminGroup;
+import com.monarchsolutions.sms.validation.SchoolAdminGroup;
 
 public class CreateUserRequest {
-    private String first_name ;
-    private String last_name_father ;
-    private String last_name_mother ;
-    private Date birth_date ;
-    private String phone_number ;
-    private String tax_id ;
-    private String curp ;
-    private String street ;
-    private String ext_number ;
-    private String int_number ;
-    private String suburb ;
-    private String locality ;
-    private String municipality ;
-    private String state ;
-    private String personal_email ;
-    private String image ;
-    private String email ;
-    private String username ;
-    private String password ;
-    private Long role_id ;
-    private Long school_id ;
+
+    @NotNull(message = "School is required", groups = {SchoolAdminGroup.class})
+    @Min(value = 1, message = "School ID must be greater than 0", groups = {SchoolAdminGroup.class})
+    private Long school_id;
+    
+    // Fields that are required for both roles:
+    @NotNull(message = "Role is required", groups = {AdminGroup.class, SchoolAdminGroup.class})
+    @Min(value = 1, message = "Role must be greater than 0", groups = {AdminGroup.class, SchoolAdminGroup.class})
+    private Long role_id;
+
+    @NotNull(message = "Name is required", groups = {AdminGroup.class, SchoolAdminGroup.class})
+    @NotBlank(message = "Name is required", groups = {AdminGroup.class, SchoolAdminGroup.class})
+    private String first_name; 
+
+    @NotNull(message = "Father's last name is required", groups = {AdminGroup.class, SchoolAdminGroup.class})
+    @NotBlank(message = "Father's last name is required", groups = {AdminGroup.class, SchoolAdminGroup.class})
+    private String last_name_father; 
+    private String last_name_mother;
+    private LocalDate birth_date;
+    private String phone_number;
+    private String tax_id;
+    private String curp;
+    private String street;
+    private String ext_number;
+    private String int_number;
+    private String suburb;
+    private String locality;
+    private String municipality;
+    private String state;
+    private String personal_email;
+    private String image;
+    @NotNull(message = "Email is required", groups = {AdminGroup.class, SchoolAdminGroup.class})
+    @NotBlank(message = "Email is required", groups = {AdminGroup.class, SchoolAdminGroup.class})
+    private String email; 
+    @NotNull(message = "Username is required", groups = {AdminGroup.class, SchoolAdminGroup.class})
+    @NotBlank(message = "Username is required", groups = {AdminGroup.class, SchoolAdminGroup.class})
+    private String username;
+    @NotNull(message = "Password is required", groups = {AdminGroup.class, SchoolAdminGroup.class})
+    @NotBlank(message = "Password is required", groups = {AdminGroup.class, SchoolAdminGroup.class})
+    private String password;
     
     public String getFirst_name() {
         return first_name;
@@ -43,10 +69,10 @@ public class CreateUserRequest {
     public void setLast_name_mother(String last_name_mother) {
         this.last_name_mother = last_name_mother;
     }
-    public Date getBirth_date() {
+    public LocalDate getBirth_date() {
         return birth_date;
     }
-    public void setBirth_date(Date birth_date) {
+    public void setBirth_date(LocalDate birth_date) {
         this.birth_date = birth_date;
     }
     public String getPhone_number() {

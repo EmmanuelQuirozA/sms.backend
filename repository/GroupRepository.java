@@ -26,16 +26,18 @@ public class GroupRepository {
     private ObjectMapper objectMapper;
     
     // Get Groups List
-    public List<GroupsListResponse> getGroupsList(Long tokenSchoolId, String lang) {
+    public List<GroupsListResponse> getGroupsList(Long tokenSchoolId, Long school_id, String lang) {
         // Create the stored procedure query
         StoredProcedureQuery query = entityManager.createStoredProcedureQuery("getGroupsList");
 
         // Register IN parameters
         query.registerStoredProcedureParameter("user_school_id", Long.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter("school_id", Long.class, ParameterMode.IN);
         query.registerStoredProcedureParameter("lang", String.class, ParameterMode.IN);
 
         // Set the parameter values
         query.setParameter("user_school_id", tokenSchoolId);
+        query.setParameter("school_id", school_id);
         query.setParameter("lang", lang);
 
         // Execute the stored procedure

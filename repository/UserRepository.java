@@ -174,7 +174,7 @@ public class UserRepository {
     }
     
     // Create User
-    public String createUser(CreateUserRequest request, Long userSchoolId, String lang) throws Exception {
+    public String createUser(CreateUserRequest request, Long userSchoolId, String lang, Long responsible_user_id) throws Exception {
         // Convert the request DTO to a JSON string
         String userDataJson = objectMapper.writeValueAsString(request);
 
@@ -184,11 +184,13 @@ public class UserRepository {
         // Register the stored procedure parameters
         query.registerStoredProcedureParameter("user_school_id", Integer.class, ParameterMode.IN);
         query.registerStoredProcedureParameter("lang", String.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter("responsible_user_id", Integer.class, ParameterMode.IN);
         query.registerStoredProcedureParameter("user_data", String.class, ParameterMode.IN);
 
         // Set the parameters. If user_school_id is null, it will be passed as null.
         query.setParameter("user_school_id", userSchoolId != null ? userSchoolId.intValue() : null);
         query.setParameter("lang", lang);
+        query.setParameter("responsible_user_id", responsible_user_id);
         query.setParameter("user_data", userDataJson);
 
         // Execute the stored procedure
@@ -197,7 +199,7 @@ public class UserRepository {
         return result != null ? result.toString() : null;
     }
     
-    public String updateUser(UpdateUserRequest request, Long userSchoolId, Long user_id, String lang) throws Exception {
+    public String updateUser(UpdateUserRequest request, Long userSchoolId, Long user_id, String lang, Long responsible_user_id) throws Exception {
         // Convert the request DTO to a JSON string
         String userDataJson = objectMapper.writeValueAsString(request);
         
@@ -208,12 +210,14 @@ public class UserRepository {
         query.registerStoredProcedureParameter("user_school_id", Long.class, ParameterMode.IN);
         query.registerStoredProcedureParameter("p_user_id", Long.class, ParameterMode.IN);
         query.registerStoredProcedureParameter("lang", String.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter("responsible_user_id", Integer.class, ParameterMode.IN);
         query.registerStoredProcedureParameter("user_data", String.class, ParameterMode.IN);
         
         // Set the parameters. If userSchoolId is null, it will be passed as null.
         query.setParameter("user_school_id", userSchoolId != null ? userSchoolId.intValue() : null);
         query.setParameter("p_user_id", user_id);
         query.setParameter("lang", lang);
+        query.setParameter("responsible_user_id", responsible_user_id);
         query.setParameter("user_data", userDataJson);
 
         query.execute();
@@ -221,15 +225,17 @@ public class UserRepository {
         return result != null ? result.toString() : null;
     }
     
-    public String changeUserStatus(Integer userId, String lang, Long tokenSchoolId) throws Exception {
+    public String changeUserStatus(Integer userId, String lang, Long tokenSchoolId, Long responsible_user_id) throws Exception {
         StoredProcedureQuery query = entityManager.createStoredProcedureQuery("changeUserStatus");
         query.registerStoredProcedureParameter("user_school_id", Integer.class, ParameterMode.IN);
         query.registerStoredProcedureParameter("p_user_id", Integer.class, ParameterMode.IN);
         query.registerStoredProcedureParameter("lang", String.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter("responsible_user_id", Integer.class, ParameterMode.IN);
         
         query.setParameter("user_school_id", tokenSchoolId != null ? tokenSchoolId.intValue() : null);
         query.setParameter("p_user_id", userId);
         query.setParameter("lang", lang);
+        query.setParameter("responsible_user_id", responsible_user_id);
         
         query.execute();
         Object result = query.getSingleResult();

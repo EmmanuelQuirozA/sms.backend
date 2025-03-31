@@ -65,6 +65,11 @@ public class JwtUtil {
         return claims.get("schoolId", Long.class);
     }
 
+    public Long extractUserId(String token) {
+        Claims claims = getClaims(token);
+        return claims.get("userId", Long.class);
+    }
+
     public boolean validateToken(String token) {
         try {
             Claims claims = getClaims(token);

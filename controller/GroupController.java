@@ -1,8 +1,8 @@
 package com.monarchsolutions.sms.controller;
 
+import com.monarchsolutions.sms.dto.groups.CreateGroupRequest;
 import com.monarchsolutions.sms.dto.groups.GroupsListResponse;
 import com.monarchsolutions.sms.dto.groups.UpdateGroupRequest;
-import com.monarchsolutions.sms.dto.groups.CreateGroupRequest;
 import com.monarchsolutions.sms.service.GroupService;
 import com.monarchsolutions.sms.util.JwtUtil;
 
@@ -24,14 +24,15 @@ public class GroupController {
     private JwtUtil jwtUtil;
 
     // Endpoint for retrieving the list of groups.
-    @PreAuthorize("hasAnyRole('ADMIN')")
-    @GetMapping("/admin/list")
+    @PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN')")
+    @GetMapping("/list")
     public ResponseEntity<?> getGroupsList( @RequestHeader("Authorization") String authHeader,
+                                            @RequestParam(required = false) Long school_id,
                                             @RequestParam(defaultValue = "en") String lang) {
         try {
             String token = authHeader.substring(7);
             Long tokenSchoolId = jwtUtil.extractSchoolId(token);
-            List<GroupsListResponse> groups = groupService.getGroupsList(tokenSchoolId, lang);
+            List<GroupsListResponse> groups = groupService.getGroupsList(tokenSchoolId, school_id, lang);
             return ResponseEntity.ok(groups);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -39,8 +40,8 @@ public class GroupController {
     }
     
         // Endpoint to create a new group
-    @PreAuthorize("hasAnyRole('ADMIN')")
-    @PostMapping("/admin/create")
+    @PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN')")
+    @PostMapping("/create")
     public ResponseEntity<String> createGroup(@RequestHeader("Authorization") String authHeader,
                                              @RequestParam(defaultValue = "en") String lang,
                                              @RequestBody CreateGroupRequest request) {
@@ -58,8 +59,8 @@ public class GroupController {
     }
 
     // Endpoint to update an existing group.
-    @PreAuthorize("hasAnyRole('ADMIN')")
-    @PutMapping("/admin/update/{group_id}")
+    @PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN')")
+    @PutMapping("/update/{group_id}")
     public ResponseEntity<String> updateGroup(@RequestHeader("Authorization") String authHeader,
                                              @PathVariable("group_id") Long group_id,
                                              @RequestParam(defaultValue = "en") String lang,
@@ -79,8 +80,8 @@ public class GroupController {
     }
 
     // Endpoint to toggle or change the group's status.
-    @PreAuthorize("hasAnyRole('ADMIN')")
-    @PostMapping("/admin/update/{group_id}/status")
+    @PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN')")
+    @PostMapping("/update/{group_id}/status")
     public ResponseEntity<String> changeGroupStatus( @RequestHeader("Authorization") String authHeader,
                                                     @RequestParam(defaultValue = "en") String lang,
                                                     @PathVariable("group_id") Long group_id) {

@@ -1,17 +1,35 @@
 package com.monarchsolutions.sms.dto.student;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+
+import java.time.LocalDate;
+
+import com.monarchsolutions.sms.validation.AdminGroup;
+import com.monarchsolutions.sms.validation.SchoolAdminGroup;
 
 public class UpdateStudentRequest {
     private Long user_id;
 
+    @NotNull(message = "School is required", groups = {SchoolAdminGroup.class, SchoolAdminGroup.class})
+    @Min(value = 1, message = "School ID must be greater than 0", groups = {SchoolAdminGroup.class, SchoolAdminGroup.class})
     private Long school_id;
+
     private Long group_id;
+    
     private String register_id;
     private String payment_reference;
 
-    private String first_name;
-    private String last_name_father;
+    @NotNull(message = "Name is required", groups = {AdminGroup.class, SchoolAdminGroup.class})
+    @NotBlank(message = "Name is required", groups = {AdminGroup.class, SchoolAdminGroup.class})
+    private String first_name; 
+
+    @NotNull(message = "Father's last name is required", groups = {AdminGroup.class, SchoolAdminGroup.class})
+    @NotBlank(message = "Father's last name is required", groups = {AdminGroup.class, SchoolAdminGroup.class})
+    private String last_name_father; 
     private String last_name_mother;
-    private String birth_date;
+    private LocalDate birth_date;
     private String phone_number;
     private String tax_id;
     private String curp;
@@ -74,10 +92,10 @@ public class UpdateStudentRequest {
     public void setLast_name_mother(String last_name_mother) {
         this.last_name_mother = last_name_mother;
     }
-    public String getBirth_date() {
+    public LocalDate getBirth_date() {
         return birth_date;
     }
-    public void setBirth_date(String birth_date) {
+    public void setBirth_date(LocalDate birth_date) {
         this.birth_date = birth_date;
     }
     public String getPhone_number() {

@@ -25,17 +25,17 @@ public class StudentService {
         return studentRepository.getStudentsList(tokenSchoolId, group_id, lang, status_filter);
     }
 
-    public void createStudent(Long userSchoolId, String lang, CreateStudentRequest request) throws Exception {
+    public String createStudent(Long userSchoolId, String lang, Long responsible_user_id, CreateStudentRequest request) throws Exception {
         // Hash the password before storing it
         String hashedPassword = passwordEncoder.encode(request.getPassword());
         request.setPassword(hashedPassword);
         
         // Call the repository method that converts the request to JSON and executes the stored procedure
-        studentRepository.createStudent(request, userSchoolId, lang);
+        return studentRepository.createStudent(request, userSchoolId, lang, responsible_user_id);
     }
 
-    public String updateStudent(Long userSchoolId, Long user_id, String lang, UpdateStudentRequest request) throws Exception {
+    public String updateStudent(Long userSchoolId, Long user_id, String lang, Long responsible_user_id, UpdateStudentRequest request) throws Exception {
         // Call the repository method that converts the request to JSON and executes the stored procedure
-        return studentRepository.updateStudent(userSchoolId, user_id, lang, request);
+        return studentRepository.updateStudent(userSchoolId, user_id, lang, responsible_user_id, request);
     }
 }

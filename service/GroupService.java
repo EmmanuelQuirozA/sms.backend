@@ -15,9 +15,9 @@ public class GroupService {
     @Autowired
     private GroupRepository groupRepository;
 
-    public List<GroupsListResponse> getGroupsList(Long tokenSchoolId, Long school_id, String lang) {
+    public List<GroupsListResponse> getGroupsList(Long tokenSchoolId, Long school_id, String lang, Integer status_filter) {
         // If tokenSchoolId is not null, the SP will filter users by school.
-        return groupRepository.getGroupsList(tokenSchoolId, school_id, lang);
+        return groupRepository.getGroupsList(tokenSchoolId, school_id, lang, status_filter);
     }
 
     public String createGroup(Long userSchoolId, String lang, CreateGroupRequest request) throws Exception {

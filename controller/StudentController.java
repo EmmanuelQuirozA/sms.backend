@@ -93,13 +93,14 @@ public class StudentController {
     public ResponseEntity<?> getStudentsList(
                                         // @RequestHeader("Authorization") String authHeader,
                                         @RequestParam(required = false) Long school_id,
+                                        @RequestParam(required = false) Long student_id,
                                         @RequestParam(required = false) Long group_id,
                                         @RequestParam(defaultValue = "en") String lang,
                                         @RequestParam(defaultValue = "-1") int status_filter) {
         try {
             // String token = authHeader.substring(7);
             // Long tokenSchoolId = jwtUtil.extractSchoolId(token);
-            List<StudentListResponse> students = studentService.getStudentsList(school_id, group_id, lang, status_filter);
+            List<StudentListResponse> students = studentService.getStudentsList(school_id, student_id, group_id, lang, status_filter);
             return ResponseEntity.ok(students);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

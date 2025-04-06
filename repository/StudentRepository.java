@@ -28,18 +28,20 @@ public class StudentRepository {
 
 
     // Get Students List
-    public List<StudentListResponse> getStudentsList(Long tokenSchoolId, Long group_id, String lang, int statusFilter){
+    public List<StudentListResponse> getStudentsList(Long tokenSchoolId,  Long student_id, Long group_id, String lang, int statusFilter){
         // Create the stored procedure query
         StoredProcedureQuery query = entityManager.createStoredProcedureQuery("getStudentsList");
 
                 // Register IN parameters
         query.registerStoredProcedureParameter("user_school_id", Long.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter("student_id", Long.class, ParameterMode.IN);
         query.registerStoredProcedureParameter("group_id", Long.class, ParameterMode.IN);
         query.registerStoredProcedureParameter("lang", String.class, ParameterMode.IN);
         query.registerStoredProcedureParameter("status_filter", Integer.class, ParameterMode.IN);
 
         // Set the parameter values
         query.setParameter("user_school_id", tokenSchoolId);
+        query.setParameter("student_id", student_id);
         query.setParameter("group_id", group_id);
         query.setParameter("lang", lang);
         query.setParameter("status_filter", statusFilter);

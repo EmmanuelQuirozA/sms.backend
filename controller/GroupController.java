@@ -28,11 +28,12 @@ public class GroupController {
     @GetMapping("/list")
     public ResponseEntity<?> getGroupsList( @RequestHeader("Authorization") String authHeader,
                                             @RequestParam(required = false) Long school_id,
-                                            @RequestParam(defaultValue = "en") String lang) {
+                                            @RequestParam(defaultValue = "en") String lang,
+                                            @RequestParam(required = false) Integer status_filter) {
         try {
             String token = authHeader.substring(7);
             Long tokenSchoolId = jwtUtil.extractSchoolId(token);
-            List<GroupsListResponse> groups = groupService.getGroupsList(tokenSchoolId, school_id, lang);
+            List<GroupsListResponse> groups = groupService.getGroupsList(tokenSchoolId, school_id, lang, status_filter);
             return ResponseEntity.ok(groups);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

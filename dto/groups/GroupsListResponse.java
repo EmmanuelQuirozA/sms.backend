@@ -12,7 +12,8 @@ public class GroupsListResponse {
     private String scholar_level_name; 
     private Boolean enabled;
     private String group_status;
-
+    private String school_description;
+    
     public Long getGroup_id() {
         return group_id;
     }
@@ -79,4 +80,11 @@ public class GroupsListResponse {
     public void setGroup_status(String group_status) {
         this.group_status = group_status;
     }
+    public String getSchool_description() {
+        return school_description;
+    }
+    public void setSchool_description(String school_description) {
+        this.school_description = school_description;
+    }
+    
 }

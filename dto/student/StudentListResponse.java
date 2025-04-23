@@ -1,5 +1,7 @@
 package com.monarchsolutions.sms.dto.student;
 
+import java.math.BigDecimal;
+
 public class StudentListResponse {
     private Long user_id;
     private Long person_id;
@@ -49,6 +51,10 @@ public class StudentListResponse {
     private String role_status;
     private String school_status;
     private String group_status;
+    private BigDecimal balance;
+    private String joining_date;
+    private BigDecimal tuition;
+    private BigDecimal default_tuition;
 
 
     public Long getStudent_id() {
@@ -328,6 +334,30 @@ public class StudentListResponse {
     }
     public void setGroup_status(String group_status) {
         this.group_status = group_status;
+    }
+    public BigDecimal getBalance() {
+        return balance;
+    }
+    public void setBalance(BigDecimal balance) {
+        this.balance = balance;
+    }
+    public String getJoining_date() {
+        return joining_date;
+    }
+    public void setJoining_date(String joining_date) {
+        this.joining_date = joining_date;
+    }
+    public BigDecimal getTuition() {
+        return tuition;
+    }
+    public void setTuition(BigDecimal tuition) {
+        this.tuition = tuition;
+    }
+    public BigDecimal getDefault_tuition() {
+        return default_tuition;
+    }
+    public void setDefault_tuition(BigDecimal default_tuition) {
+        this.default_tuition = default_tuition;
     }
 
     

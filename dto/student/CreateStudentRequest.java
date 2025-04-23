@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import com.monarchsolutions.sms.validation.AdminGroup;
@@ -51,7 +52,8 @@ public class CreateStudentRequest {
     @NotNull(message = "Password is required", groups = {AdminGroup.class, SchoolAdminGroup.class})
     @NotBlank(message = "Password is required", groups = {AdminGroup.class, SchoolAdminGroup.class})
     private String password;
-    
+    private BigDecimal tuition;
+
     public Long getSchool_id() {
         return school_id;
     }
@@ -189,6 +191,12 @@ public class CreateStudentRequest {
     }
     public void setPayment_reference(String payment_reference) {
         this.payment_reference = payment_reference;
+    }
+    public BigDecimal getTuition() {
+        return tuition;
+    }
+    public void setTuition(BigDecimal tuition) {
+        this.tuition = tuition;
     }
     
 }

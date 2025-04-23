@@ -10,6 +10,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.ParameterMode;
 import jakarta.persistence.StoredProcedureQuery;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +29,7 @@ public class StudentRepository {
 
 
     // Get Students List
-    public List<StudentListResponse> getStudentsList(Long tokenSchoolId,  Long student_id, Long group_id, String lang, int statusFilter){
+    public List<StudentListResponse> getStudentsList(Long tokenSchoolId,  Long student_id, Long group_id, String search_criteria, String lang, int statusFilter){
         // Create the stored procedure query
         StoredProcedureQuery query = entityManager.createStoredProcedureQuery("getStudentsList");
 
@@ -36,6 +37,7 @@ public class StudentRepository {
         query.registerStoredProcedureParameter("user_school_id", Long.class, ParameterMode.IN);
         query.registerStoredProcedureParameter("student_id", Long.class, ParameterMode.IN);
         query.registerStoredProcedureParameter("group_id", Long.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter("search_criteria", String.class, ParameterMode.IN);
         query.registerStoredProcedureParameter("lang", String.class, ParameterMode.IN);
         query.registerStoredProcedureParameter("status_filter", Integer.class, ParameterMode.IN);
 
@@ -43,6 +45,7 @@ public class StudentRepository {
         query.setParameter("user_school_id", tokenSchoolId);
         query.setParameter("student_id", student_id);
         query.setParameter("group_id", group_id);
+        query.setParameter("search_criteria", search_criteria);
         query.setParameter("lang", lang);
         query.setParameter("status_filter", statusFilter);
 
@@ -129,6 +132,10 @@ public class StudentRepository {
         student.setRole_status(data[43] != null ? (String) data[43] : null);
         student.setSchool_status(data[44] != null ? (String) data[44] : null);
         student.setGroup_status(data[45] != null ? (String) data[45] : null);
+        student.setBalance(data[46] != null ? (BigDecimal) data[46] : null);
+        student.setJoining_date(data[47] != null ? (String) data[47] : null);
+        student.setTuition(data[48] != null ? (BigDecimal) data[48] : null);
+        student.setDefault_tuition(data[49] != null ? (BigDecimal) data[49] : null);
     
         return student;
     }

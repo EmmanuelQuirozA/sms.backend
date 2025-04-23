@@ -1,5 +1,6 @@
 package com.monarchsolutions.sms.dto.user;
 
+import java.math.BigDecimal;
 
 public class UserListDTO {
     private Long user_id;
@@ -36,6 +37,7 @@ public class UserListDTO {
     private String user_status;
     private String role_status;
     private String school_status;
+    private BigDecimal balance;
 
     public Long getUser_id() {
         return user_id;
@@ -241,7 +243,11 @@ public class UserListDTO {
     public void setSchool_status(String school_status) {
         this.school_status = school_status;
     }
-
-
+    public BigDecimal getBalance() {
+        return balance;
+    }
+    public void setBalance(BigDecimal balance) {
+        this.balance = balance;
+    }
     
 }

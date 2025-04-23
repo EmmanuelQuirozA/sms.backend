@@ -1,10 +1,12 @@
 package com.monarchsolutions.sms.dto.reports;
 
-public class PayDetailResponse {
+import java.math.BigDecimal;
+
+public class PaymentDetailResponse {
     private Long payment_id;
     private Long school_id;
     private String payment_month;
-    private String amount;
+    private BigDecimal amount;
     private String validated;
     private String validated_at;
     private String pay_created_at;
@@ -31,6 +33,19 @@ public class PayDetailResponse {
     private String validator_full_name;
     private String validator_phone_number;
     private String validator_username;
+    private Long payment_request_id;
+
+    private BigDecimal pr_amount;
+    private String pr_created_at;
+    private String pr_pay_by;
+    private String pr_comments;
+    private Integer late_fee;
+    private String fee_type;
+    private String late_fee_frequency;
+    private BigDecimal late_fee_total;
+    private String late_periods;
+    private BigDecimal to_pay;
+
     public Long getPayment_id() {
         return payment_id;
     }
@@ -49,10 +64,10 @@ public class PayDetailResponse {
     public void setPayment_month(String payment_month) {
         this.payment_month = payment_month;
     }
-    public String getAmount() {
+    public BigDecimal getAmount() {
         return amount;
     }
-    public void setAmount(String amount) {
+    public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
     public String getValidated() {
@@ -210,6 +225,72 @@ public class PayDetailResponse {
     }
     public void setValidator_username(String validator_username) {
         this.validator_username = validator_username;
+    }
+    public Long getPayment_request_id() {
+        return payment_request_id;
+    }
+    public void setPayment_request_id(Long payment_request_id) {
+        this.payment_request_id = payment_request_id;
+    }
+    public BigDecimal getPr_amount() {
+        return pr_amount;
+    }
+    public void setPr_amount(BigDecimal pr_amount) {
+        this.pr_amount = pr_amount;
+    }
+    public String getPr_created_at() {
+        return pr_created_at;
+    }
+    public void setPr_created_at(String pr_created_at) {
+        this.pr_created_at = pr_created_at;
+    }
+    public String getPr_pay_by() {
+        return pr_pay_by;
+    }
+    public void setPr_pay_by(String pr_pay_by) {
+        this.pr_pay_by = pr_pay_by;
+    }
+    public String getPr_comments() {
+        return pr_comments;
+    }
+    public void setPr_comments(String pr_comments) {
+        this.pr_comments = pr_comments;
+    }
+    public Integer getLate_fee() {
+        return late_fee;
+    }
+    public void setLate_fee(Integer late_fee) {
+        this.late_fee = late_fee;
+    }
+    public String getFee_type() {
+        return fee_type;
+    }
+    public void setFee_type(String fee_type) {
+        this.fee_type = fee_type;
+    }
+    public String getLate_fee_frequency() {
+        return late_fee_frequency;
+    }
+    public void setLate_fee_frequency(String late_fee_frequency) {
+        this.late_fee_frequency = late_fee_frequency;
+    }
+    public BigDecimal getLate_fee_total() {
+        return late_fee_total;
+    }
+    public void setLate_fee_total(BigDecimal late_fee_total) {
+        this.late_fee_total = late_fee_total;
+    }
+    public String getLate_periods() {
+        return late_periods;
+    }
+    public void setLate_periods(String late_periods) {
+        this.late_periods = late_periods;
+    }
+    public BigDecimal getTo_pay() {
+        return to_pay;
+    }
+    public void setTo_pay(BigDecimal to_pay) {
+        this.to_pay = to_pay;
     }
     
 }

@@ -1,5 +1,7 @@
 package com.monarchsolutions.sms.dto.school;
 
+import java.math.BigDecimal;
+
 public class SchoolsList {
     private Long school_id;
     private Long related_school_id;
@@ -20,6 +22,7 @@ public class SchoolsList {
     private String phone_number;
     private String email;
     private Boolean enabled;
+    private BigDecimal default_tuition;
     private String school_status;
 
     public Long getSchool_id() {
@@ -135,6 +138,12 @@ public class SchoolsList {
     }
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+    public BigDecimal getDefault_tuition() {
+        return default_tuition;
+    }
+    public void setDefault_tuition(BigDecimal default_tuition) {
+        this.default_tuition = default_tuition;
     }
     public String getSchool_status() {
         return school_status;

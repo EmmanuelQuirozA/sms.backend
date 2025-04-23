@@ -20,9 +20,9 @@ public class StudentService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public List<StudentListResponse> getStudentsList(Long tokenSchoolId,Long student_id, Long group_id, String lang, int status_filter){
+    public List<StudentListResponse> getStudentsList(Long tokenSchoolId, Long student_id, Long group_id, String search_criteria, String lang, int status_filter){
         // If tokenSchoolId is not null, the SP will filter students by school.
-        return studentRepository.getStudentsList(tokenSchoolId, student_id, group_id, lang, status_filter);
+        return studentRepository.getStudentsList(tokenSchoolId, student_id, group_id, search_criteria, lang, status_filter);
     }
 
     public String createStudent(Long userSchoolId, String lang, Long responsible_user_id, CreateStudentRequest request) throws Exception {

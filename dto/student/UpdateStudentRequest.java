@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import com.monarchsolutions.sms.validation.AdminGroup;
@@ -43,6 +44,7 @@ public class UpdateStudentRequest {
     private String personal_email;
     private String image;
     private String email;
+    private BigDecimal tuition;
 
     public Long getUser_id() {
         return user_id;
@@ -176,4 +178,11 @@ public class UpdateStudentRequest {
     public void setEmail(String email) {
         this.email = email;
     }
+    public BigDecimal getTuition() {
+        return tuition;
+    }
+    public void setTuition(BigDecimal tuition) {
+        this.tuition = tuition;
+    }
+    
 }

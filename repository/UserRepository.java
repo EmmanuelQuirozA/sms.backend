@@ -11,6 +11,8 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.ParameterMode;
 import jakarta.persistence.StoredProcedureQuery;
 
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -169,7 +171,8 @@ public class UserRepository {
         user.setUser_status(data[31] != null ? (String) data[31] : null);
         user.setRole_status(data[32] != null ? (String) data[32] : null);
         user.setSchool_status(data[33] != null ? (String) data[33] : null);
-        
+        user.setBalance(data[34] != null ? (BigDecimal) data[34] : null);
+
         return user;
     }
     

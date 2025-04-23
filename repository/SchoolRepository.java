@@ -10,6 +10,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.ParameterMode;
 import jakarta.persistence.StoredProcedureQuery;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -77,7 +78,8 @@ public class SchoolRepository {
         school.setPhone_number(data[16] != null ? (String) data[16] : null);
         school.setEmail(data[17] != null ? (String) data[17] : null);
         school.setEnabled(data[18] != null ? (Boolean) data[18] : null);
-        school.setSchool_status(data[19] != null ? (String) data[19] : null);
+        school.setDefault_tuition(data[19] != null ? (BigDecimal) data[19] : null);
+        school.setSchool_status(data[20] != null ? (String) data[20] : null);
         
         return school;
     }

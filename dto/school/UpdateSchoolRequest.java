@@ -1,5 +1,7 @@
 package com.monarchsolutions.sms.dto.school;
 
+import java.math.BigDecimal;
+
 public class UpdateSchoolRequest {
     private Long school_id;
     private Long related_school_id;
@@ -17,6 +19,7 @@ public class UpdateSchoolRequest {
     private String state;
     private String phone_number;
     private String email;
+    private BigDecimal default_tuition;
 
     public Long getSchool_id() {
         return school_id;
@@ -113,6 +116,12 @@ public class UpdateSchoolRequest {
     }
     public void setEmail(String email) {
         this.email = email;
+    }
+    public BigDecimal getDefault_tuition() {
+        return default_tuition;
+    }
+    public void setDefault_tuition(BigDecimal default_tuition) {
+        this.default_tuition = default_tuition;
     }
     
 }

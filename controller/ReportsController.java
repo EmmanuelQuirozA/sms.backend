@@ -1,13 +1,16 @@
 package com.monarchsolutions.sms.controller;
 
-import com.monarchsolutions.sms.dto.reports.StudentsBalanceRechargeResponse;
-import com.monarchsolutions.sms.dto.reports.PaymentDetailResponse;
-import com.monarchsolutions.sms.dto.reports.PaymentRequestListResponse;
+import com.monarchsolutions.sms.dto.common.PageResult;
+import com.monarchsolutions.sms.dto.reports.BalanceRechargeResponse;
+import com.monarchsolutions.sms.dto.reports.PaymentsResponse;
+import com.monarchsolutions.sms.dto.reports.UpdatePaymentRequest;
 import com.monarchsolutions.sms.service.ReportsService;
 import com.monarchsolutions.sms.util.JwtUtil;
 
+
+import java.sql.Date;
 import java.time.LocalDate;
-import java.util.List;
+import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -29,35 +32,57 @@ public class ReportsController {
     // Endpoint to retrieve the payments pivot report.
     @PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN')")
     @GetMapping("/payments/report")
-    public ResponseEntity<?> getPaymentsPivotReport(@RequestHeader("Authorization") String authHeader,
-                                                    @RequestParam(required = false) Long student_id,
-                                                    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start_date,
-                                                    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end_date) {
+    public ResponseEntity<?> getPaymentsPivotReport(
+        @RequestHeader("Authorization") String authHeader,
+        @RequestParam(required = false) Long student_id,
+        @RequestParam(required = false) Long payment_id,
+        @RequestParam(required = false) Long payment_request_id,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start_date,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end_date,
+        @RequestParam(required = false) Boolean group_status,
+        @RequestParam(required = false) Boolean user_status,
+        @RequestParam(required = false) String student_full_name,
+        @RequestParam(required = false) String payment_reference,
+        @RequestParam(required = false) String generation,
+        @RequestParam(required = false) String grade_group,
+        @RequestParam(required = false) String scholar_level,
+        @RequestParam(defaultValue = "en") String lang,
+        @RequestParam(defaultValue = "0") Integer offset,
+        @RequestParam(defaultValue = "10") Integer limit,
+        @RequestParam(name = "export_all", defaultValue = "false") Boolean exportAll,
+        @RequestParam(name = "show_debt_only", defaultValue = "false") Boolean showDebtOnly,
+        @RequestParam(required = false) String order_by,
+        @RequestParam(required = false) String order_dir
+    ) {
         try {
-            String token = authHeader.substring(7);
-            Long tokenSchoolId = jwtUtil.extractSchoolId(token);
-            // Call the service method to get the report
-            String reportJson = reportsService.getPaymentsPivotReport(tokenSchoolId,student_id,start_date,end_date);
-            return ResponseEntity.ok(reportJson);
-        } catch(Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
+            // strip off "Bearer "
+            String token    = authHeader.replaceFirst("^Bearer\\s+", "");
+            Long   school_id = jwtUtil.extractSchoolId(token);
 
-    // Endpoint for retrieving the list of paymentDetails.
-    @PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN')")
-    @GetMapping("/paymentdetails")
-    public ResponseEntity<?> getPayments(
-                                        @RequestHeader("Authorization") String authHeader,
-                                        @RequestParam(required = false) Long student_id,
-                                        @RequestParam(required = false) Long payment_id,
-                                        @RequestParam(required = false) Long payment_request_id,
-                                        @RequestParam(defaultValue = "en") String lang) {
-        try {
-            String token = authHeader.substring(7);
-            Long tokenSchoolId = jwtUtil.extractSchoolId(token);
-            List<PaymentDetailResponse> paymentDetails = reportsService.getPayments(tokenSchoolId, student_id, payment_id, payment_request_id, lang);
-            return ResponseEntity.ok(paymentDetails);
+            PageResult<Map<String,Object>> page = reportsService.getPaymentsPivotReport(
+                school_id,
+                student_id,
+                payment_id,
+                payment_request_id,
+                start_date,
+                end_date,
+                group_status,
+                user_status,
+                student_full_name,
+                payment_reference,
+                generation,
+                grade_group,
+                scholar_level,
+                lang,
+                offset,
+                limit,
+                exportAll,
+                showDebtOnly,
+                order_by,
+                order_dir
+            );
+
+            return ResponseEntity.ok(page);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -65,17 +90,129 @@ public class ReportsController {
 
     // Endpoint for retrieving the list of paymentDetails.
     @PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN')")
-    @GetMapping("/paymentrequestslist")
+    @GetMapping("/payments")
+    public ResponseEntity<?> getPayments(
+        @RequestHeader("Authorization") String authHeader,
+        @RequestParam(required = false) Long student_id,
+        @RequestParam(required = false) Long payment_id,
+        @RequestParam(required = false) Long payment_request_id,
+        @RequestParam(required = false) String student_full_name,
+        @RequestParam(required = false) String payment_reference,
+        @RequestParam(required = false) String generation,
+        @RequestParam(required = false) String grade_group,
+        @RequestParam(required = false) String pt_name,
+        @RequestParam(required = false) String scholar_level_name,
+        @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate payment_month,
+        @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date payment_created_at,
+        @RequestParam(defaultValue = "en")          String lang,
+        @RequestParam(defaultValue = "0")           Integer offset,
+        @RequestParam(defaultValue = "10")          Integer limit,
+        @RequestParam(name = "export_all", defaultValue = "false") Boolean exportAll,
+        @RequestParam(required = false) String order_by,
+        @RequestParam(required = false) String order_dir
+        ) throws Exception {
+        try {
+            // strip off "Bearer "
+            String token    = authHeader.replaceFirst("^Bearer\\s+", "");
+            Long   schoolId = jwtUtil.extractSchoolId(token);
+
+            PageResult<Map<String,Object>> page = reportsService.getPayments(
+                schoolId,
+                student_id,
+                payment_id,
+                payment_request_id,
+                student_full_name,
+                payment_reference,
+                generation,
+                grade_group,
+                pt_name,
+                scholar_level_name,
+                payment_month,
+                payment_created_at,
+                lang,
+                offset,
+                limit,
+                exportAll,
+                order_by,
+                order_dir
+            );
+
+            return ResponseEntity.ok(page);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // Endpoint for retrieving the list of paymentDetails.
+    
+    // Endpoint to retrieve the payments pivot report.
+    @PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN')")
+    @GetMapping("/paymentrequests")
     public ResponseEntity<?> getPaymentRequests(
-                                        @RequestHeader("Authorization") String authHeader,
-                                        @RequestParam(required = false) Long student_id,
-                                        @RequestParam(required = false) Long payment_id,
-                                        @RequestParam(defaultValue = "en") String lang) {
+        @RequestHeader("Authorization") String authHeader,
+        @RequestParam(required = false) Long student_id,
+        @RequestParam(required = false) Long payment_request_id,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate pr_created_start,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate pr_created_end,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate pr_pay_by_start,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate pr_pay_by_end,
+        @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date payment_month_start,
+        @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date payment_month_end,
+        @RequestParam(required = false) String ps_pr_name,
+        @RequestParam(required = false) String pt_name,
+        @RequestParam(required = false) String payment_reference,
+        @RequestParam(required = false) String student_full_name,
+        @RequestParam(required = false) Boolean sc_enabled,
+        @RequestParam(required = false) Boolean u_enabled,
+        @RequestParam(required = false) Boolean g_enabled,
+        @RequestParam(required = false) Long pr_payment_status_id,
+        @RequestParam(required = false) String grade_group,
+        @RequestParam(defaultValue = "en") String lang,
+        @RequestParam(required = false) String order_by,
+        @RequestParam(required = false) String order_dir,
+        @RequestParam(defaultValue = "0") Integer offset,
+        @RequestParam(defaultValue = "10") Integer limit,
+        @RequestParam(name = "export_all", defaultValue = "false") Boolean exportAll
+    ) {
         try {
-            String token = authHeader.substring(7);
-            Long tokenSchoolId = jwtUtil.extractSchoolId(token);
-            List<PaymentRequestListResponse> paymentDetails = reportsService.getPaymentRequests(tokenSchoolId, student_id, payment_id, lang);
-            return ResponseEntity.ok(paymentDetails);
+            // strip off "Bearer "
+            String token    = authHeader.replaceFirst("^Bearer\\s+", "");
+            Long   school_id = jwtUtil.extractSchoolId(token);
+            Long   token_user_id = jwtUtil.extractUserId(token);
+
+            PageResult<Map<String,Object>> page = reportsService.getPaymentRequests(
+                token_user_id,
+                school_id,
+                student_id,
+                payment_request_id,
+                pr_created_start,
+                pr_created_end,
+                pr_pay_by_start,
+                pr_pay_by_end,
+                payment_month_start,
+                payment_month_end,
+                ps_pr_name,
+                pt_name,
+                payment_reference,
+                student_full_name,
+                sc_enabled,
+                u_enabled,
+                g_enabled,
+                pr_payment_status_id,
+                grade_group,
+                lang,
+                order_by,
+                order_dir,
+                offset,
+                limit,
+                exportAll
+            );
+
+            return ResponseEntity.ok(page);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -83,18 +220,74 @@ public class ReportsController {
 
     // Endpoint for retrieving the list of paymentDetails.
     @PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN')")
-    @GetMapping("/studentsbalancerecharges")
-    public ResponseEntity<?> getPayments(
+    @GetMapping("/balancerecharges")
+    public ResponseEntity<?> getBalanceRecharges(
                                         @RequestHeader("Authorization") String authHeader,
-                                        @RequestParam(required = false) Long student_id,
+                                        @RequestParam(required = false) Long user_id,
                                         @RequestParam(defaultValue = "en") String lang) {
         try {
             String token = authHeader.substring(7);
             Long tokenSchoolId = jwtUtil.extractSchoolId(token);
-            List<StudentsBalanceRechargeResponse> paymentDetails = reportsService.getStudentsBalanceRecharge(tokenSchoolId, student_id, lang);
+            List<BalanceRechargeResponse> paymentDetails = reportsService.getBalanceRecharges(tokenSchoolId, user_id, lang);
             return ResponseEntity.ok(paymentDetails);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+
+
+    @PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN')")
+    @GetMapping("/paymentrequest/details")
+    public ResponseEntity<?> getPaymentRequestDetails(
+        @RequestHeader("Authorization") String authHeader,
+        @RequestParam Long payment_request_id,
+        @RequestParam(defaultValue="en") String lang
+    ) {
+        String token = authHeader.substring(7);
+        Long schoolId = jwtUtil.extractSchoolId(token);
+        Long tokenUserId = jwtUtil.extractUserId(token);
+        try {
+            var resp = reportsService.getPaymentRequestDetails(
+                tokenUserId,
+                schoolId,
+                payment_request_id,
+                lang
+            );
+            return ResponseEntity.ok(resp);
+        } catch (Exception ex) {
+            return ResponseEntity.status(403).body(ex.getMessage());
+        }
+    }
+
+    
+
+    // Endpoint to update an existing user.
+    @PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN')")
+    @PutMapping("/payment-request/update/{id}")
+    public ResponseEntity<?> updatePaymentRequest(
+        @PathVariable("id") Long paymentRequestId,
+        @RequestHeader("Authorization") String authHeader,
+        @RequestBody UpdatePaymentRequest body,
+        @RequestParam(defaultValue="en") String lang
+    ) {
+        try {
+            String token = authHeader.substring(7);
+            // extract user_id from the token to pass as responsable_user_id
+            Long userId = Long.valueOf(jwtUtil.extractUserId(token)); 
+            // (or however you encode the userId claim)
+            Map<String,Object> jsonData = body.getData();
+            String jsonResult = reportsService.updatePaymentRequest(paymentRequestId, userId, jsonData, lang);
+            // the SP returns a tiny one‐row result: JSON_OBJECT AS result
+            // forward it verbatim
+            return ResponseEntity.ok()
+                                 .header("Content-Type","application/json")
+                                 .body(jsonResult);
+        } catch(Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+              "success", false,
+              "message", e.getMessage()
+            ));
         }
     }
 }

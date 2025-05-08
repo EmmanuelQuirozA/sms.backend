@@ -3,13 +3,15 @@ package com.monarchsolutions.sms.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.monarchsolutions.sms.dto.common.PageResult;
 import com.monarchsolutions.sms.dto.student.CreateStudentRequest;
-import com.monarchsolutions.sms.dto.student.StudentListResponse;
 import com.monarchsolutions.sms.dto.student.UpdateStudentRequest;
 import com.monarchsolutions.sms.repository.StudentRepository;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class StudentService {
@@ -20,9 +22,38 @@ public class StudentService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public List<StudentListResponse> getStudentsList(Long tokenSchoolId, Long student_id, Long group_id, String search_criteria, String lang, int status_filter){
+    @Transactional(readOnly = true)
+    public PageResult<Map<String,Object>> getStudentsList(
+        Long tokenSchoolId,  
+        Long student_id,
+        String full_name,
+        String payment_reference,
+        String generation,
+        String grade_group,
+        Boolean status_filter,
+        String lang,
+        int page,
+        int size,
+        Boolean exportAll,
+        String order_by,
+        String order_dir
+    ) throws Exception {
         // If tokenSchoolId is not null, the SP will filter students by school.
-        return studentRepository.getStudentsList(tokenSchoolId, student_id, group_id, search_criteria, lang, status_filter);
+        return studentRepository.getStudentsList(
+            tokenSchoolId,  
+            student_id,
+            full_name,
+            payment_reference,
+            generation,
+            grade_group,
+            status_filter,
+            lang,
+            page,
+            size,
+            exportAll,
+            order_by,
+            order_dir
+        );
     }
 
     public String createStudent(Long userSchoolId, String lang, Long responsible_user_id, CreateStudentRequest request) throws Exception {

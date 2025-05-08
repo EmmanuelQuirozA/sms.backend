@@ -1,23 +1,25 @@
 package com.monarchsolutions.sms.dto.reports;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
-public class PaymentDetailResponse {
+public class PaymentsResponse {
     private Long payment_id;
+    private Long student_id;
     private Long school_id;
     private String payment_month;
     private BigDecimal amount;
-    private String validated;
-    private String validated_at;
-    private String pay_created_at;
-    private String updated_at;
+    private Long payment_status_id;
+    private LocalDateTime validated_at;
+    private LocalDateTime pay_created_at;
+    private LocalDateTime updated_at;
     private String comments;
     private String pt_name;
     private String payment_reference;
     private String generation;
     private String email;
     private String personal_email;
-    private String full_name;
+    private String student_full_name;
     private String address;
     private String phone_number;
     private String school_description;
@@ -35,22 +37,17 @@ public class PaymentDetailResponse {
     private String validator_username;
     private Long payment_request_id;
 
-    private BigDecimal pr_amount;
-    private String pr_created_at;
-    private String pr_pay_by;
-    private String pr_comments;
-    private Integer late_fee;
-    private String fee_type;
-    private String late_fee_frequency;
-    private BigDecimal late_fee_total;
-    private String late_periods;
-    private BigDecimal to_pay;
-
     public Long getPayment_id() {
         return payment_id;
     }
     public void setPayment_id(Long payment_id) {
         this.payment_id = payment_id;
+    }
+    public Long getStudent_id() {
+        return student_id;
+    }
+    public void setStudent_id(Long student_id) {
+        this.student_id = student_id;
     }
     public Long getSchool_id() {
         return school_id;
@@ -70,28 +67,28 @@ public class PaymentDetailResponse {
     public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
-    public String getValidated() {
-        return validated;
+    public Long getPayment_status_id() {
+        return payment_status_id;
     }
-    public void setValidated(String validated) {
-        this.validated = validated;
+    public void setPayment_status_id(Long payment_status_id) {
+        this.payment_status_id = payment_status_id;
     }
-    public String getValidated_at() {
+    public LocalDateTime getValidated_at() {
         return validated_at;
     }
-    public void setValidated_at(String validated_at) {
+    public void setValidated_at(LocalDateTime validated_at) {
         this.validated_at = validated_at;
     }
-    public String getPay_created_at() {
+    public LocalDateTime getPay_created_at() {
         return pay_created_at;
     }
-    public void setPay_created_at(String pay_created_at) {
+    public void setPay_created_at(LocalDateTime pay_created_at) {
         this.pay_created_at = pay_created_at;
     }
-    public String getUpdated_at() {
+    public LocalDateTime getUpdated_at() {
         return updated_at;
     }
-    public void setUpdated_at(String updated_at) {
+    public void setUpdated_at(LocalDateTime updated_at) {
         this.updated_at = updated_at;
     }
     public String getComments() {
@@ -130,11 +127,11 @@ public class PaymentDetailResponse {
     public void setPersonal_email(String personal_email) {
         this.personal_email = personal_email;
     }
-    public String getFull_name() {
-        return full_name;
+    public String getStudent_full_name() {
+        return student_full_name;
     }
-    public void setFull_name(String full_name) {
-        this.full_name = full_name;
+    public void setStudent_full_name(String student_full_name) {
+        this.student_full_name = student_full_name;
     }
     public String getAddress() {
         return address;
@@ -231,66 +228,6 @@ public class PaymentDetailResponse {
     }
     public void setPayment_request_id(Long payment_request_id) {
         this.payment_request_id = payment_request_id;
-    }
-    public BigDecimal getPr_amount() {
-        return pr_amount;
-    }
-    public void setPr_amount(BigDecimal pr_amount) {
-        this.pr_amount = pr_amount;
-    }
-    public String getPr_created_at() {
-        return pr_created_at;
-    }
-    public void setPr_created_at(String pr_created_at) {
-        this.pr_created_at = pr_created_at;
-    }
-    public String getPr_pay_by() {
-        return pr_pay_by;
-    }
-    public void setPr_pay_by(String pr_pay_by) {
-        this.pr_pay_by = pr_pay_by;
-    }
-    public String getPr_comments() {
-        return pr_comments;
-    }
-    public void setPr_comments(String pr_comments) {
-        this.pr_comments = pr_comments;
-    }
-    public Integer getLate_fee() {
-        return late_fee;
-    }
-    public void setLate_fee(Integer late_fee) {
-        this.late_fee = late_fee;
-    }
-    public String getFee_type() {
-        return fee_type;
-    }
-    public void setFee_type(String fee_type) {
-        this.fee_type = fee_type;
-    }
-    public String getLate_fee_frequency() {
-        return late_fee_frequency;
-    }
-    public void setLate_fee_frequency(String late_fee_frequency) {
-        this.late_fee_frequency = late_fee_frequency;
-    }
-    public BigDecimal getLate_fee_total() {
-        return late_fee_total;
-    }
-    public void setLate_fee_total(BigDecimal late_fee_total) {
-        this.late_fee_total = late_fee_total;
-    }
-    public String getLate_periods() {
-        return late_periods;
-    }
-    public void setLate_periods(String late_periods) {
-        this.late_periods = late_periods;
-    }
-    public BigDecimal getTo_pay() {
-        return to_pay;
-    }
-    public void setTo_pay(BigDecimal to_pay) {
-        this.to_pay = to_pay;
     }
     
 }

@@ -1,7 +1,7 @@
 package com.monarchsolutions.sms.controller;
 
+import com.monarchsolutions.sms.dto.common.PageResult;
 import com.monarchsolutions.sms.dto.student.CreateStudentRequest;
-import com.monarchsolutions.sms.dto.student.StudentListResponse;
 import com.monarchsolutions.sms.dto.student.UpdateStudentRequest;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -91,18 +92,40 @@ public class StudentController {
     @PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN')")
     @GetMapping("/list")
     public ResponseEntity<?> getStudentsList(
-                                        // @RequestHeader("Authorization") String authHeader,
-                                        @RequestParam(required = false) Long school_id,
-                                        @RequestParam(required = false) Long student_id,
-                                        @RequestParam(required = false) Long group_id,
-                                        @RequestParam(required = false) String search_criteria,
-                                        @RequestParam(defaultValue = "en") String lang,
-                                        @RequestParam(defaultValue = "-1") int status_filter) {
+        @RequestHeader("Authorization") String authHeader,
+        @RequestParam(required = false) Long student_id,
+        @RequestParam(required = false) String full_name,
+        @RequestParam(required = false) String payment_reference,
+        @RequestParam(required = false) String generation,
+        @RequestParam(required = false) String grade_group,
+        @RequestParam(required = false) Boolean status_filter,
+        @RequestParam(defaultValue = "en") String lang,
+        @RequestParam(defaultValue = "0")  Integer offset,
+        @RequestParam(defaultValue = "10") Integer limit,
+        @RequestParam(name = "export_all", defaultValue = "false") Boolean exportAll,
+        @RequestParam(required = false) String order_by,
+        @RequestParam(required = false) String order_dir
+        ) throws Exception {
         try {
-            // String token = authHeader.substring(7);
-            // Long tokenSchoolId = jwtUtil.extractSchoolId(token);
-            List<StudentListResponse> students = studentService.getStudentsList(school_id, student_id, group_id, search_criteria, lang, status_filter);
-            return ResponseEntity.ok(students);
+            // strip off "Bearer "
+            String token    = authHeader.replaceFirst("^Bearer\\s+", "");
+            Long   token_user_id = jwtUtil.extractUserId(token);
+            PageResult<Map<String,Object>> page = studentService.getStudentsList(
+                token_user_id,  
+                student_id,
+                full_name,
+                payment_reference,
+                generation,
+                grade_group,
+                status_filter,
+                lang,
+                offset,
+                limit,
+                exportAll,
+                order_by,
+                order_dir
+            );
+            return ResponseEntity.ok(page);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

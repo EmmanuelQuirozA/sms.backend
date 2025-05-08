@@ -1,8 +1,8 @@
 package com.monarchsolutions.sms.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.monarchsolutions.sms.dto.student.StudentListResponse;
 import com.monarchsolutions.sms.dto.student.UpdateStudentRequest;
+import com.monarchsolutions.sms.dto.common.PageResult;
 import com.monarchsolutions.sms.dto.student.CreateStudentRequest;
 
 import jakarta.persistence.EntityManager;
@@ -11,15 +11,23 @@ import jakarta.persistence.ParameterMode;
 import jakarta.persistence.StoredProcedureQuery;
 
 import java.math.BigDecimal;
+import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+
+import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class StudentRepository {
+
+	@Autowired
+	private DataSource dataSource;
     
     @PersistenceContext
     private EntityManager entityManager;
@@ -29,117 +37,90 @@ public class StudentRepository {
 
 
     // Get Students List
-    public List<StudentListResponse> getStudentsList(Long tokenSchoolId,  Long student_id, Long group_id, String search_criteria, String lang, int statusFilter){
-        // Create the stored procedure query
-        StoredProcedureQuery query = entityManager.createStoredProcedureQuery("getStudentsList");
+    public PageResult<Map<String,Object>> getStudentsList(
+        Long tokenSchoolId,  
+        Long student_id,
+        String full_name,
+        String payment_reference,
+        String generation,
+        String grade_group,
+        Boolean status_filter,
+		String lang,
+		int page,
+		int size,
+		Boolean exportAll,
+		String order_by,
+		String order_dir
+    ) throws SQLException {
+		String call = "{CALL getStudentsList(?,?,?,?,?,?,?,?,?,?,?,?,?)}";
+		List<Map<String,Object>> content = new ArrayList<>();
+		long totalCount = 0;
 
-                // Register IN parameters
-        query.registerStoredProcedureParameter("user_school_id", Long.class, ParameterMode.IN);
-        query.registerStoredProcedureParameter("student_id", Long.class, ParameterMode.IN);
-        query.registerStoredProcedureParameter("group_id", Long.class, ParameterMode.IN);
-        query.registerStoredProcedureParameter("search_criteria", String.class, ParameterMode.IN);
-        query.registerStoredProcedureParameter("lang", String.class, ParameterMode.IN);
-        query.registerStoredProcedureParameter("status_filter", Integer.class, ParameterMode.IN);
+		try (Connection conn = dataSource.getConnection();
+		CallableStatement stmt = conn.prepareCall(call)) {
 
-        // Set the parameter values
-        query.setParameter("user_school_id", tokenSchoolId);
-        query.setParameter("student_id", student_id);
-        query.setParameter("group_id", group_id);
-        query.setParameter("search_criteria", search_criteria);
-        query.setParameter("lang", lang);
-        query.setParameter("status_filter", statusFilter);
+            int idx = 1;
+            // 1) the IDs
+            if (tokenSchoolId != null) { stmt.setInt(idx++, tokenSchoolId.intValue()); } else { stmt.setNull(idx++, Types.INTEGER); }				
+            if (student_id != null) { stmt.setInt(idx++, student_id.intValue()); } else { stmt.setNull(idx++, Types.INTEGER); }
 
-        // Execute the stored procedure
-        query.execute();
+            // 2) the filters
+            stmt.setString(idx++, full_name);
+            stmt.setString(idx++, payment_reference);
+            stmt.setString(idx++, generation);
+            stmt.setString(idx++, grade_group);
+            if (status_filter != null) {
+                stmt.setBoolean(idx++, status_filter);
+            } else {
+                stmt.setNull(idx++, Types.BOOLEAN);
+            }
 
-        // Retrieve the results as a list of Object arrays
-        @SuppressWarnings("unchecked")
-        List<Object[]> results = query.getResultList();
-        List<StudentListResponse> students = new ArrayList<>();
+            stmt.setString(idx++, lang);
 
-        for (Object[] data : results) {
-            students.add(mapStudent(data));
+			int offsetParam = page;     // rename 'page' var to 'offsetParam'
+			int limitParam  = size;     // rename 'size' var to 'limitParam'
+			// 15. offset
+			if (exportAll) {
+				stmt.setNull(idx++, Types.INTEGER);
+				stmt.setNull(idx++, Types.INTEGER);
+			} else {
+				stmt.setInt(idx++, offsetParam);
+				stmt.setInt(idx++, limitParam);
+			}
+			// 17. export_all
+			stmt.setBoolean(idx++, exportAll);
+			stmt.setString(idx++, order_by);
+			stmt.setString(idx++, order_dir);
+			
+			// -- execute & read page result --
+			boolean hasRs = stmt.execute();
+			if (hasRs) {
+				try (ResultSet rs = stmt.getResultSet()) {
+					ResultSetMetaData md = rs.getMetaData();
+					int cols = md.getColumnCount();
+					while (rs.next()) {
+						Map<String,Object> row = new LinkedHashMap<>();
+						for (int c = 1; c <= cols; c++) {
+							row.put(md.getColumnLabel(c), rs.getObject(c));
+						}
+						content.add(row);
+					}
+				}
+			}
+
+            // -- advance to the second resultset: total count --
+            if (stmt.getMoreResults()) {
+                try (ResultSet rs2 = stmt.getResultSet()) {
+                    if (rs2.next()) {
+                        totalCount = rs2.getLong(1);
+                    }
+                }
+            }
         }
-        return students;
-    }
 
-    private StudentListResponse mapStudent(Object[] data) {
-        StudentListResponse student = new StudentListResponse();
-    
-        student.setStudent_id(data[0] != null ? ((Number) data[0]).longValue() : null);
-        student.setGroup_id(data[1] != null ? ((Number) data[1]).longValue() : null);
-        student.setRegister_id(data[2] != null ? (String) data[2] : null);
-        student.setPayment_reference(data[3] != null ? (String) data[3] : null);
-        student.setUser_id(data[4] != null ? ((Number) data[4]).longValue() : null);
-        student.setPerson_id(data[5] != null ? ((Number) data[5]).longValue() : null);
-        student.setSchool_id(data[6] != null ? ((Number) data[6]).longValue() : null);
-        student.setRole_id(data[7] != null ? ((Number) data[7]).longValue() : null);
-        student.setEmail(data[8] != null ? (String) data[8] : null);
-        student.setUsername(data[9] != null ? (String) data[9] : null);
-        student.setRole_name(data[10] != null ? (String) data[10] : null);
-        student.setFull_name(data[11] != null ? (String) data[11] : null);
-        student.setAddress(data[12] != null ? (String) data[12] : null);
-        student.setCommercial_name(data[13] != null ? (String) data[13] : null);
-        student.setBusiness_name(data[14] != null ? (String) data[14] : null);
-        student.setGroup_name(data[15] != null ? (String) data[15] : null);
-        student.setGeneration(data[16] != null ? (String) data[16] : null);
-        student.setGrade_group(data[17] != null ? (String) data[17] : null);
-        student.setGrade(data[18] != null ? (String) data[18] : null);
-        student.setGroup(data[19] != null ? (String) data[19] : null);
-        student.setScholar_level_id(data[20] != null ? ((Number) data[20]).longValue() : null);
-        student.setScholar_level_name(data[21] != null ? (String) data[21] : null);
-        student.setFirst_name(data[22] != null ? (String) data[22] : null);
-        student.setLast_name_father(data[23] != null ? (String) data[23] : null);
-        student.setLast_name_mother(data[24] != null ? (String) data[24] : null);
-        
-        // p.birth_date (index 25): format to "yyyy-MM-dd"
-        student.setBirth_date(
-            data[25] != null 
-              ? (data[25] instanceof java.sql.Date 
-                    ? new SimpleDateFormat("yyyy-MM-dd").format((java.sql.Date) data[25])
-                    : data[25].toString())
-              : null
-        );
-        
-        student.setPhone_number(data[26] != null ? (String) data[26] : null);
-        student.setTax_id(data[27] != null ? (String) data[27] : null);
-        student.setStreet(data[28] != null ? (String) data[28] : null);
-        student.setExt_number(data[29] != null ? (String) data[29] : null);
-        student.setInt_number(data[30] != null ? (String) data[30] : null);
-        student.setSuburb(data[31] != null ? (String) data[31] : null);
-        student.setLocality(data[32] != null ? (String) data[32] : null);
-        student.setMunicipality(data[33] != null ? (String) data[33] : null);
-        student.setState(data[34] != null ? (String) data[34] : null);
-        student.setPersonal_email(data[35] != null ? (String) data[35] : null);
-        student.setImage(data[36] != null ? (String) data[36] : null);
-        
-        // Enabled fields are numeric; assuming 1 for true.
-        student.setUser_enabled(data[37] != null ? (Boolean) data[37] : null);
-        student.setRole_enabled(data[38] != null ? (Boolean) data[38] : null);
-        student.setSchool_enabled(data[39] != null ? (Boolean) data[39] : null);
-        student.setGroup_enabled(data[40] != null ? (Boolean) data[40] : null);
-        
-        // birth_date_formated (index 40): sometimes returned as a Date, so format it.
-        student.setBirth_date_formated(
-            data[41] != null 
-              ? (data[41] instanceof java.sql.Date 
-                    ? new SimpleDateFormat("MM-dd-yyyy").format((java.sql.Date) data[41])
-                    : data[41].toString())
-              : null
-        );
-        
-        student.setUser_status(data[42] != null ? (String) data[42] : null);
-        student.setRole_status(data[43] != null ? (String) data[43] : null);
-        student.setSchool_status(data[44] != null ? (String) data[44] : null);
-        student.setGroup_status(data[45] != null ? (String) data[45] : null);
-        student.setBalance(data[46] != null ? (BigDecimal) data[46] : null);
-        student.setJoining_date(data[47] != null ? (String) data[47] : null);
-        student.setTuition(data[48] != null ? (BigDecimal) data[48] : null);
-        student.setDefault_tuition(data[49] != null ? (BigDecimal) data[49] : null);
-    
-        return student;
+        return new PageResult<>(content, totalCount, page, size);
     }
-
+    
     public String updateStudent(Long userSchoolId, Long user_id, String lang, Long responsible_user_id, UpdateStudentRequest request) throws Exception {
         // Convert the request DTO to a JSON string
         String studentDataJson = objectMapper.writeValueAsString(request);

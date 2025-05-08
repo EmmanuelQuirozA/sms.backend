@@ -2,16 +2,16 @@ package com.monarchsolutions.sms.dto.reports;
 
 import java.math.BigDecimal;
 
-public class StudentsBalanceRechargeResponse {
+public class BalanceRechargeResponse {
     private Long balance_recharge_id;
     private Long user_id;
-    private Long student_id;
     private Long responsable_user_id;
     private String date;
     private BigDecimal amount;
-    private String student_full_name;
+    private String user_full_name;
     private String responsable_full_name;
     private String school_description;
+    private String role_name;
     private String group_name;
     private String generation;
     private String grade_group;
@@ -32,12 +32,6 @@ public class StudentsBalanceRechargeResponse {
     public void setUser_id(Long user_id) {
         this.user_id = user_id;
     }
-    public Long getStudent_id() {
-        return student_id;
-    }
-    public void setStudent_id(Long student_id) {
-        this.student_id = student_id;
-    }
     public Long getResponsable_user_id() {
         return responsable_user_id;
     }
@@ -56,11 +50,11 @@ public class StudentsBalanceRechargeResponse {
     public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
-    public String getStudent_full_name() {
-        return student_full_name;
+    public String getUser_full_name() {
+        return user_full_name;
     }
-    public void setStudent_full_name(String student_full_name) {
-        this.student_full_name = student_full_name;
+    public void setUser_full_name(String user_full_name) {
+        this.user_full_name = user_full_name;
     }
     public String getResponsable_full_name() {
         return responsable_full_name;
@@ -73,6 +67,12 @@ public class StudentsBalanceRechargeResponse {
     }
     public void setSchool_description(String school_description) {
         this.school_description = school_description;
+    }
+    public String getRole_name() {
+        return role_name;
+    }
+    public void setRole_name(String role_name) {
+        this.role_name = role_name;
     }
     public String getGroup_name() {
         return group_name;

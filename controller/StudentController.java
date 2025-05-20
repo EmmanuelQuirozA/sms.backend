@@ -2,6 +2,7 @@ package com.monarchsolutions.sms.controller;
 
 import com.monarchsolutions.sms.dto.common.PageResult;
 import com.monarchsolutions.sms.dto.student.CreateStudentRequest;
+import com.monarchsolutions.sms.dto.student.GetStudent;
 import com.monarchsolutions.sms.dto.student.UpdateStudentRequest;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -161,6 +162,22 @@ public class StudentController {
             // Call the service method (which will hash the password and pass the JSON data to the SP)
             String jsonResponse = studentService.updateStudent(tokenSchoolId, user_id, lang, responsible_user_id, request);
             return ResponseEntity.ok(jsonResponse);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // Endpoint for retrieving the list of related schools for a specific shcool.
+    @PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN')")
+    @GetMapping("/student-details")
+    public ResponseEntity<?> getStudent(@RequestHeader("Authorization") String authHeader,
+                                        @RequestParam(required = true) Long student_id,
+                                        @RequestParam(defaultValue = "en") String lang) {
+        try {
+            String token = authHeader.substring(7);
+            Long token_user_id = jwtUtil.extractUserId(token);
+            List<GetStudent> student = studentService.getStudent(token_user_id, student_id, lang);
+            return ResponseEntity.ok(student);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

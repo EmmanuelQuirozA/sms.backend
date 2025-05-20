@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.monarchsolutions.sms.dto.common.PageResult;
 import com.monarchsolutions.sms.dto.student.CreateStudentRequest;
+import com.monarchsolutions.sms.dto.student.GetStudent;
 import com.monarchsolutions.sms.dto.student.UpdateStudentRequest;
 import com.monarchsolutions.sms.repository.StudentRepository;
 
@@ -69,4 +70,9 @@ public class StudentService {
         // Call the repository method that converts the request to JSON and executes the stored procedure
         return studentRepository.updateStudent(userSchoolId, user_id, lang, responsible_user_id, request);
     }
+
+    public List<GetStudent> getStudent(Long token_user_id, Long user_id, String lang) {
+        return studentRepository.getStudent(token_user_id, user_id, lang);
+    }
+
 }

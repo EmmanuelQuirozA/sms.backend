@@ -1,6 +1,10 @@
 package com.monarchsolutions.sms.repository;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.monarchsolutions.sms.dto.payments.UpdatePaymentDTO;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.ParameterMode;
@@ -12,6 +16,12 @@ public class PaymentRepository {
 
   @PersistenceContext
   private EntityManager em;
+    
+  @PersistenceContext
+  private EntityManager entityManager;
+    
+  @Autowired
+  private ObjectMapper objectMapper;
 
   /**
    * Calls the createPayment SP and returns its JSON_OBJECT(...) result.
@@ -32,6 +42,8 @@ public class PaymentRepository {
       .registerStoredProcedureParameter("p_comments", String.class, ParameterMode.IN)
       .registerStoredProcedureParameter("p_payment_request_id", Integer.class, ParameterMode.IN)
       .registerStoredProcedureParameter("p_payment_through_id", Integer.class, ParameterMode.IN)
+      .registerStoredProcedureParameter("p_receipt_path", String.class, ParameterMode.IN)
+      .registerStoredProcedureParameter("p_receipt_file_name", String.class, ParameterMode.IN)
       .registerStoredProcedureParameter("p_responsable_user_id", Integer.class, ParameterMode.IN)
       .registerStoredProcedureParameter("lang", String.class, ParameterMode.IN)
       // this SP always returns a single row with a single column "result" (the JSON)
@@ -51,6 +63,8 @@ public class PaymentRepository {
             ? req.getPayment_request_id().intValue()
             : null);
     q.setParameter("p_payment_through_id", req.getPayment_through_id());
+    q.setParameter("p_receipt_path", req.getReceipt_path());
+    q.setParameter("p_receipt_file_name", req.getReceipt_file_name());
     // the one who’s performing the action is the same as token user
     q.setParameter("p_responsable_user_id", tokenUserId.intValue());
     q.setParameter("lang", lang);
@@ -66,5 +80,31 @@ public class PaymentRepository {
     } else {
         return (String) single;
     }
+  }
+
+  
+    
+  public String updatePayment(Long token_user_id, Long payment_id, UpdatePaymentDTO request, String lang) throws Exception {
+    // Convert the request DTO to a JSON string
+    String paymentDataJson = objectMapper.writeValueAsString(request);
+
+    // Create the stored procedure query
+    StoredProcedureQuery query = entityManager.createStoredProcedureQuery("updatePayment");
+
+    // Register the stored procedure parameters
+    query.registerStoredProcedureParameter("responsable_user_id", Integer.class, ParameterMode.IN);
+    query.registerStoredProcedureParameter("payment_id", Long.class, ParameterMode.IN);
+    query.registerStoredProcedureParameter("p_json", String.class, ParameterMode.IN);
+    query.registerStoredProcedureParameter("lang", String.class, ParameterMode.IN);
+    
+    // Set the parameters. I
+    query.setParameter("responsable_user_id", token_user_id);
+    query.setParameter("payment_id", payment_id);
+    query.setParameter("p_json", paymentDataJson);
+    query.setParameter("lang", lang);
+
+    query.execute();
+    Object result = query.getSingleResult();
+    return result != null ? result.toString() : null;
   }
 }

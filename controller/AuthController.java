@@ -23,9 +23,10 @@ public class AuthController {
     private JwtUtil jwtUtil;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody UserLoginDTO loginRequest) {
+    public ResponseEntity<?> login(
+          @RequestParam(defaultValue = "en") String lang,
+          @RequestBody UserLoginDTO loginRequest) {
         // Retrieve the language parameter
-        String lang = loginRequest.getLanguage();
 
         // Retrieve user by username or email via stored procedure
         UserLoginDTO user = authService.getUserByUsernameOrEmail(

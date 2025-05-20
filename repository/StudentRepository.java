@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.monarchsolutions.sms.dto.student.UpdateStudentRequest;
 import com.monarchsolutions.sms.dto.common.PageResult;
 import com.monarchsolutions.sms.dto.student.CreateStudentRequest;
+import com.monarchsolutions.sms.dto.student.GetStudent;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -13,6 +14,7 @@ import jakarta.persistence.StoredProcedureQuery;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -172,4 +174,89 @@ public class StudentRepository {
         Object result = query.getSingleResult();
         return result != null ? result.toString() : null;
     }
+
+
+
+
+    // Get Payment Details List
+	public List<GetStudent> getStudent(Long token_user_id, Long student_id, String lang){
+		// Create the stored procedure query
+		StoredProcedureQuery query = entityManager.createStoredProcedureQuery("getStudent");
+
+		// Register IN parameters
+		query.registerStoredProcedureParameter("user_school_id", Long.class, ParameterMode.IN);
+		query.registerStoredProcedureParameter("student_id", Long.class, ParameterMode.IN);
+		query.registerStoredProcedureParameter("lang", String.class, ParameterMode.IN);
+
+		// Set the parameter values
+		query.setParameter("user_school_id", token_user_id);
+		query.setParameter("student_id", student_id);
+		query.setParameter("lang", lang);
+
+		// Execute the stored procedure
+		query.execute();
+
+		// Retrieve the results as a list of Object arrays
+		@SuppressWarnings("unchecked")
+		List<Object[]> results = query.getResultList();
+		List<GetStudent> student = new ArrayList<>();
+
+		for (Object[] data : results) {
+				student.add(mapStudentRequests(data));
+		}
+		return student;
+	}
+
+    private GetStudent mapStudentRequests(Object[] data) {
+		MappingConfig[] config = new MappingConfig[] {
+			new MappingConfig("student_id", Long.class),
+			new MappingConfig("group_id", Long.class),
+			new MappingConfig("register_id", String.class),
+			new MappingConfig("payment_reference", String.class),
+			new MappingConfig("user_id", Long.class),
+			new MappingConfig("school_id", Long.class),
+			new MappingConfig("email", String.class),
+			new MappingConfig("username", String.class),
+			new MappingConfig("role_name", String.class),
+			new MappingConfig("full_name", String.class),
+			new MappingConfig("address", String.class),
+			new MappingConfig("commercial_name", String.class),
+			new MappingConfig("business_name", String.class),
+			new MappingConfig("group_name", String.class),
+			new MappingConfig("generation", String.class),
+			new MappingConfig("grade_group", String.class),
+			new MappingConfig("grade", String.class),
+			new MappingConfig("group", String.class),
+			new MappingConfig("scholar_level_id", Long.class),
+			new MappingConfig("scholar_level_name", String.class),
+			new MappingConfig("first_name", String.class),
+			new MappingConfig("last_name_father", String.class),
+			new MappingConfig("last_name_mother", String.class),
+			new MappingConfig("birth_date", Date.class),
+			new MappingConfig("phone_number", String.class),
+			new MappingConfig("tax_id", String.class),
+			new MappingConfig("street", String.class),
+			new MappingConfig("ext_number", String.class),
+			new MappingConfig("int_number", String.class),
+			new MappingConfig("suburb", String.class),
+			new MappingConfig("locality", String.class),
+			new MappingConfig("municipality", String.class),
+			new MappingConfig("state", String.class),
+			new MappingConfig("personal_email", String.class),
+			new MappingConfig("user_enabled", Boolean.class),
+			new MappingConfig("role_enabled", Boolean.class),
+			new MappingConfig("school_enabled", Boolean.class),
+			new MappingConfig("group_enabled", Boolean.class),
+			new MappingConfig("user_status", String.class),
+			new MappingConfig("role_status", String.class),
+			new MappingConfig("school_status", String.class),
+			new MappingConfig("group_status", String.class),
+			new MappingConfig("balance", BigDecimal.class),
+			new MappingConfig("joining_date", Date.class),
+			new MappingConfig("tuition", BigDecimal.class),
+			new MappingConfig("default_tuition", BigDecimal.class),
+		};
+
+		return MapperUtil.mapRow(data, config, GetStudent.class);
+	}
 }

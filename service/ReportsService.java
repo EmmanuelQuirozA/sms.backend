@@ -15,6 +15,7 @@ import java.math.RoundingMode;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -190,7 +191,7 @@ public class ReportsService {
             Long paymentRequestId,
             String lang
     ) throws SQLException {
-        // 1) call SP and map into your V2 DTO
+        // 1) call SP and map into V2 DTO
         var resp = reportsRepository.getPaymentRequestDetails(tokenUserId, schoolId, paymentRequestId, lang);
 
         // fee_type and pr_amount come from resp.getPaymentRequest()
@@ -198,6 +199,8 @@ public class ReportsService {
         BigDecimal prAmount      = pr.getPr_amount();
         BigDecimal lateFee       = pr.getLate_fee();
         int      freq            = pr.getLate_fee_frequency();
+        LocalDateTime closedAt   = pr.getClosed_at();
+        
         LocalDate payBy;
         if (pr.getPr_pay_by() != null) {
             payBy = pr.getPr_pay_by().toLocalDate();
@@ -238,7 +241,12 @@ public class ReportsService {
 
         // we’ll keep generating fees day by day until our running balance + payments ≥ 0
         while (true) {
-        // stop if we’ve gone past both now and the last payment date
+        // 1) Stop if we’ve gone past closedAt:
+        if (closedAt != null
+            && cursor.atStartOfDay().isAfter(closedAt.toLocalDate().atStartOfDay())) {
+            break;
+        }
+        // 2) stop if we’ve gone past both now and the last payment date
         if (cursor.isAfter(LocalDate.now()) && cursor.isAfter(lastPaymentDate)) {
             break;
         }
@@ -277,7 +285,7 @@ public class ReportsService {
         cursor = cursor.plusDays(freq);
         }
 
-        // 3) your payments entries:
+        // 3) payments entries:
         List<BreakdownEntry> payments = resp.getPayments().stream()
             .map(p -> {
                 BigDecimal paymentAmount = p.getAmount();
@@ -303,6 +311,7 @@ public class ReportsService {
 
         // 4) merge, sort and recompute final balances:
         List<BreakdownEntry> combined = new ArrayList<>(fees);
+        
         combined.addAll(payments);
         combined.sort(Comparator.comparing(BreakdownEntry::getDate));
 
@@ -316,15 +325,30 @@ public class ReportsService {
         }
 
         resp.setBreakdown(combined);
+        
+        // 5) closed_at entry at the very end
+        if (closedAt != null) {
+            combined.add(new BreakdownEntry(
+                null,                    // no payment_id
+                "closed_at",             // type
+                null,                    // no status
+                pr.getPs_pr_name(),                // you can localize or pull a name from pr
+                closedAt,                // timestamp
+                null,         // amount = 0
+                running.get()            // final balance
+            ));
+            // re-sort so it really goes last (or just trust it’s the newest date)
+            combined.sort(Comparator.comparing(BreakdownEntry::getDate));
+        }
 
-        // 5) now build your summary from exactly those two lists:
+        // 6) now build summary from exactly those two lists:
         // 1) sum only the actual late‐fee entries, not the initial_payment_request:
         BigDecimal accumulatedFees = fees.stream()
         .filter(e -> "late_fee".equals(e.getType()))   // ignore the "initial_payment_request"
         .map(BreakdownEntry::getAmount)                 // e.g. –10, –10, …
         .reduce(BigDecimal.ZERO, BigDecimal::add)       // –50
         .negate();              
-        // 2) your other values stay the same:
+        // 2) other values stay the same:
         BigDecimal latePeriods     = BigDecimal.valueOf(
             fees.stream().filter(e -> "late_fee".equals(e.getType())).count()
         );                        // +50

@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
-public class CreatePaymentRequest {
+public class CreatePayment {
   private Long student_id;
   private Long payment_concept_id;
   @JsonFormat(pattern = "yyyy-MM-dd")

@@ -14,6 +14,8 @@ public class UpdatePaymentDTO {
   private String comments;
   private Long payment_request_id;
   private Long payment_through_id;
+  private String receipt_path;
+  private String receipt_file_name;
   public Long getPayment_id() {
     return payment_id;
   }
@@ -74,4 +76,17 @@ public class UpdatePaymentDTO {
   public void setPayment_through_id(Long payment_through_id) {
     this.payment_through_id = payment_through_id;
   }
+  public String getReceipt_path() {
+    return receipt_path;
+  }
+  public void setReceipt_path(String receipt_path) {
+    this.receipt_path = receipt_path;
+  }
+  public String getReceipt_file_name() {
+    return receipt_file_name;
+  }
+  public void setReceipt_file_name(String receipt_file_name) {
+    this.receipt_file_name = receipt_file_name;
+  }
+  
 }

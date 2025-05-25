@@ -5,6 +5,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.Path;
 import java.nio.file.Files;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Set;
@@ -21,7 +22,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.monarchsolutions.sms.dto.payments.CreatePaymentRequest;
+import com.monarchsolutions.sms.dto.payments.CreatePayment;
 import com.monarchsolutions.sms.dto.payments.UpdatePaymentDTO;
 import com.monarchsolutions.sms.service.PaymentService;
 import com.monarchsolutions.sms.util.JwtUtil;
@@ -55,24 +56,7 @@ public class PaymentController {
 
   @Autowired
   private JwtUtil jwtUtil;
-
-  /**
-   * Example:
-   * POST /api/payments/create?lang=es
-   * Authorization: Bearer <token>
-   *
-   * Body:
-   * {
-   *   "student_id": 42,
-   *   "payment_type_id": 3,
-   *   "payment_month": "2025-05-01",
-   *   "amount": 1500.00,
-   *   "payment_status_id": 1,
-   *   "comments": "May tuition",
-   *   "payment_request_id": 7,
-   *   "payment_through_id": 2
-   * }
-   */
+  
   @PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN')")
   @PostMapping(
     path = "/create",
@@ -81,7 +65,7 @@ public class PaymentController {
   )
   public ResponseEntity<String> createPayment(
       @RequestHeader("Authorization") String authHeader,
-      @RequestPart("request") CreatePaymentRequest request,   // JSON part
+      @RequestPart("request") CreatePayment request,   // JSON part
       @RequestPart(value = "receipt", required = false) MultipartFile receipt,
       @RequestParam(defaultValue = "es") String lang
   ) throws IOException {
@@ -98,9 +82,11 @@ public class PaymentController {
           // a) Clean the original filename
           String original = StringUtils.cleanPath(receipt.getOriginalFilename());
           
-          // b) Build a prefix using today’s date (YYYY-MM-DD) and the student ID
-          String date = LocalDate.now().format(DateTimeFormatter.ISO_DATE);  // e.g. "2025-05-19"
-          String prefix = date + "-" + request.getStudent_id();  // e.g. "2025-05-19-317"
+          // b) Build a prefix using today’s date (yyyy-MM-dd_HH-mm-ss) and the student ID
+          // String date = LocalDate.now().format(DateTimeFormatter.ISO_DATE);  // e.g. "2025-05-19"
+          DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
+          String timestamp = LocalDateTime.now().format(fmt); // e.g. "2025-05-19_14-23-05"
+          String prefix = timestamp + "-" + request.getStudent_id();  // e.g. "2025-05-19_14-23-05-317"
           
           // c) Prepare protected directory
           Path uploadPath = Paths.get(uploadDir);
@@ -127,7 +113,7 @@ public class PaymentController {
           // f) Store back into your DTO
           request.setReceipt_file_name(original);
           // receipt_file_path is the URL path your clients will use:
-          request.setReceipt_path("/protectedfiles/" + storedName);
+          request.setReceipt_path(storedName);
       } catch (IOException e) {
           // Log the real error
           log.error("Error saving receipt file to {}", uploadDir, e);
@@ -157,21 +143,42 @@ public class PaymentController {
 
   // Endpoint to update an existing user.
   @PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN')")
-  @PutMapping("/update/{payment_id}")
-  public ResponseEntity<String> updatePayment(@RequestBody UpdatePaymentDTO request,
-                                              @RequestHeader("Authorization") String authHeader,
-                                              @RequestParam(defaultValue = "es") String lang,
-                                              @PathVariable("payment_id") Long payment_id) {
+  @PutMapping(
+    path     = "/update/{payment_id}",
+    produces = MediaType.APPLICATION_JSON_VALUE
+    // ← removed `consumes` so it will accept both JSON PUTs and multipart PUTs
+  )
+  public ResponseEntity<String> updatePayment(
+      @RequestHeader("Authorization") String authHeader,
+      @PathVariable("payment_id")  Long paymentId,
+      @RequestParam(value = "removeReceipt", defaultValue = "false")
+          boolean removeReceipt,
+      @RequestPart(value = "request", required = false)
+          UpdatePaymentDTO dto,                  // now optional
+      @RequestPart(value = "receipt", required = false)
+          MultipartFile receipt,
+      @RequestParam(defaultValue = "es") String lang
+  ) {
     try {
-      request.setPayment_id(payment_id);
-      // Extract the token (remove "Bearer " prefix)
-      String token = authHeader.substring(7);
-      Long responsible_user_id = jwtUtil.extractUserId(token);
-      // Call the service method (which will hash the password and pass the JSON data to the SP)
-      String jsonResponse = paymentService.updatePayment(responsible_user_id, payment_id, request, lang);
-      return ResponseEntity.ok(jsonResponse);
+      // 1) ensure dto exists and has its ID
+      if (dto == null) {
+        dto = new UpdatePaymentDTO();
+      }
+      dto.setPayment_id(paymentId);
+
+      Long userId = jwtUtil.extractUserId(authHeader.substring(7));
+      String json = paymentService.updatePayment(
+        userId, paymentId, dto, removeReceipt, receipt, lang
+      );
+      return ResponseEntity.ok(json);
+
     } catch (Exception e) {
-      return ResponseEntity.badRequest().body(e.getMessage());
+      log.error("Error updating payment", e);
+      return ResponseEntity
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .body("{\"title\":\"Update Failed\",\"message\":\""
+              + e.getMessage().replace("\"","'")
+              + "\",\"type\":\"error\"}");
     }
   }
 }

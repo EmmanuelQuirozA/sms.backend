@@ -235,8 +235,6 @@ public class ReportsController {
         }
     }
 
-
-
     @PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN')")
     @GetMapping("/paymentrequest/details")
     public ResponseEntity<?> getPaymentRequestDetails(
@@ -259,8 +257,6 @@ public class ReportsController {
             return ResponseEntity.status(403).body(ex.getMessage());
         }
     }
-
-    
 
     // Endpoint to update an existing user.
     @PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN')")

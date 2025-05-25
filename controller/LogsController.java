@@ -10,6 +10,8 @@ import com.monarchsolutions.sms.util.JwtUtil;
 import com.monarchsolutions.sms.dto.userLogs.UserLogsListDto;
 import com.monarchsolutions.sms.dto.userLogs.paymentRequest.PaymentRequestLogGroupDto;
 import com.monarchsolutions.sms.dto.userLogs.paymentRequest.PaymentRequestLogsDto;
+import com.monarchsolutions.sms.dto.userLogs.payments.PaymentLogGroupDto;
+import com.monarchsolutions.sms.dto.userLogs.payments.PaymentLogsDto;
 import com.monarchsolutions.sms.service.LogsService;
 
 @RestController
@@ -40,7 +42,7 @@ public class LogsController {
     }
 
     // Endpoint for retrieving the list of paymentRequestLogs.
-        @PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN')")
     @GetMapping("/payment-requests/{paymentRequestId}")
     public ResponseEntity<List<PaymentRequestLogGroupDto>> getPaymentRequestLogs(
             @RequestHeader("Authorization") String authHeader,
@@ -56,6 +58,28 @@ public class LogsController {
             token_user_id,    
             schoolId,
             paymentRequestId,
+            lang
+        );
+        return ResponseEntity.ok(grouped);
+    }
+    
+    // Endpoint for retrieving the list of paymentLogs.
+    @PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN')")
+    @GetMapping("/payment/{paymentId}")
+    public ResponseEntity<List<PaymentLogGroupDto>> getPaymentLogs(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable("paymentId") Long paymentId,
+            @RequestParam(defaultValue = "en") String lang
+    ) {
+        // strip "Bearer "
+        String token = authHeader.substring(7);
+        Long schoolId = jwtUtil.extractSchoolId(token);
+        Long token_user_id = jwtUtil.extractUserId(token);
+
+        List<PaymentLogGroupDto> grouped = UserLogsService.getGroupedPaymentLogs(
+            token_user_id,    
+            schoolId,
+            paymentId,
             lang
         );
         return ResponseEntity.ok(grouped);

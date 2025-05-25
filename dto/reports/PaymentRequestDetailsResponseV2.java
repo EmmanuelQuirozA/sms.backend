@@ -144,6 +144,7 @@ public class PaymentRequestDetailsResponseV2 {
     private Integer pr_payment_status_id;
     private String ps_pr_name;
     private String pt_name;
+    private LocalDateTime closed_at;
     public Long getPayment_request_id() {
       return payment_request_id;
     }
@@ -239,6 +240,12 @@ public class PaymentRequestDetailsResponseV2 {
     }
     public void setPt_name(String pt_name) {
       this.pt_name = pt_name;
+    }
+    public LocalDateTime getClosed_at() {
+      return closed_at;
+    }
+    public void setClosed_at(LocalDateTime closed_at) {
+      this.closed_at = closed_at;
     }
 
   }

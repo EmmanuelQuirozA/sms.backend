@@ -335,46 +335,7 @@ public class ReportsRepository {
 		return new PageResult<>(content, totalCount, page, size);
 	}
 
-	private PaymentsResponse mapPayments(Object[] data) {
-		MappingConfig[] config = new MappingConfig[] {
-			new MappingConfig("payment_id", Long.class),
-			new MappingConfig("student_id", Long.class),
-			new MappingConfig("school_id", Long.class),
-			new MappingConfig("payment_month", String.class),
-			new MappingConfig("amount", BigDecimal.class),
-			new MappingConfig("payment_status_id", Long.class),
-			new MappingConfig("validated_at", String.class),
-			new MappingConfig("pay_created_at", LocalDateTime.class),
-			new MappingConfig("updated_at", LocalDateTime.class),
-			new MappingConfig("comments", String.class),
-			new MappingConfig("pt_name", String.class),
-			new MappingConfig("payment_reference", String.class),
-			new MappingConfig("generation", String.class),
-			new MappingConfig("email", String.class),
-			new MappingConfig("personal_email", String.class),
-			new MappingConfig("student_full_name", String.class),
-			new MappingConfig("address", String.class),
-			new MappingConfig("phone_number", String.class),
-			new MappingConfig("school_description", String.class),
-			new MappingConfig("scholar_level_name", String.class),
-			new MappingConfig("g_enabled", Boolean.class),
-			new MappingConfig("u_enabled", Boolean.class),
-			new MappingConfig("sc_enabled", Boolean.class),
-			new MappingConfig("school_status", String.class),
-			new MappingConfig("user_status", String.class),
-			new MappingConfig("group_status", String.class),
-			new MappingConfig("payment_status_name", String.class),
-			new MappingConfig("grade_group", String.class),
-			new MappingConfig("validator_full_name", String.class),
-			new MappingConfig("validator_phone_number", String.class),
-			new MappingConfig("validator_username", String.class),
-			new MappingConfig("payment_request_id", Long.class),
-		};
-
-		return MapperUtil.mapRow(data, config, PaymentsResponse.class);
-	}
-
-	// Get Payment Details List
+	// Get Payment Request List
 	public List<PaymentRequestListResponse> getPaymentRequests(Long tokenSchoolId, Long student_id, Long payment_id, String lang){
 		// Create the stored procedure query
 		StoredProcedureQuery query = entityManager.createStoredProcedureQuery("getPaymentRequests");
@@ -562,6 +523,11 @@ public class ReportsRepository {
 							pr.setPartial_payment_transformed(rs.getString("partial_payment_transformed"));
 							pr.setPs_pr_name(rs.getString("ps_pr_name"));
 							pr.setPt_name(rs.getString("pt_name"));
+							pr.setClosed_at(
+								Optional.ofNullable(rs.getTimestamp("closed_at"))
+									.map(Timestamp::toLocalDateTime)
+									.orElse(null)
+							);
 							requests.add(pr);
 						}
 					}

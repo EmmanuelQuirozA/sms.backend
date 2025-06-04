@@ -1,9 +1,9 @@
 package com.monarchsolutions.sms.controller;
 
 import com.monarchsolutions.sms.dto.common.PageResult;
+import com.monarchsolutions.sms.dto.paymentRequests.UpdatePaymentRequest;
 import com.monarchsolutions.sms.dto.reports.BalanceRechargeResponse;
 import com.monarchsolutions.sms.dto.reports.PaymentsResponse;
-import com.monarchsolutions.sms.dto.reports.UpdatePaymentRequest;
 import com.monarchsolutions.sms.service.ReportsService;
 import com.monarchsolutions.sms.util.JwtUtil;
 
@@ -271,7 +271,6 @@ public class ReportsController {
             String token = authHeader.substring(7);
             // extract user_id from the token to pass as responsable_user_id
             Long userId = Long.valueOf(jwtUtil.extractUserId(token)); 
-            // (or however you encode the userId claim)
             Map<String,Object> jsonData = body.getData();
             String jsonResult = reportsService.updatePaymentRequest(paymentRequestId, userId, jsonData, lang);
             // the SP returns a tiny one‐row result: JSON_OBJECT AS result

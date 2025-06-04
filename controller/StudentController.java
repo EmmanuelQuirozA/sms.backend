@@ -91,7 +91,7 @@ public class StudentController {
 
     // Endpoint for retrieving the list of students.
     @PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN')")
-    @GetMapping("/list")
+    @GetMapping("")
     public ResponseEntity<?> getStudentsList(
         @RequestHeader("Authorization") String authHeader,
         @RequestParam(required = false) Long student_id,
@@ -99,7 +99,7 @@ public class StudentController {
         @RequestParam(required = false) String payment_reference,
         @RequestParam(required = false) String generation,
         @RequestParam(required = false) String grade_group,
-        @RequestParam(required = false) Boolean status_filter,
+        @RequestParam(required = false) Boolean enabled,
         @RequestParam(defaultValue = "en") String lang,
         @RequestParam(defaultValue = "0")  Integer offset,
         @RequestParam(defaultValue = "10") Integer limit,
@@ -118,7 +118,7 @@ public class StudentController {
                 payment_reference,
                 generation,
                 grade_group,
-                status_filter,
+                enabled,
                 lang,
                 offset,
                 limit,

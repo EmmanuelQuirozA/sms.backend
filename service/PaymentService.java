@@ -48,11 +48,6 @@ public class PaymentService {
 			return repo.createPayment(tokenUserId, req, lang);
 	}
 
-	// public String updatePayment(Long token_user_id, Long payment_id, UpdatePaymentDTO request, String lang) throws Exception {
-	// 		// Call the repository method that converts the request to JSON and executes the stored procedure
-	// 		return repo.updatePayment(token_user_id, payment_id, request, lang);
-	// }
-
 	/** Fetch just one payment’s detail by its ID (and language). */
   public Map<String,Object> getPaymentById(Long paymentId, String lang) throws SQLException {
     // schoolId, studentId, paymentRequestId all null, filters null, page=0,size=1

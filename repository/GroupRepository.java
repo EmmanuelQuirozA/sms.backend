@@ -75,7 +75,7 @@ public class GroupRepository {
         return group;
     }
 
-    // Create User
+    // Create Group
     public String createGroup(Long userSchoolId, String lang, CreateGroupRequest request) throws Exception {
         // Convert the request DTO to a JSON string
         String groupDataJson = objectMapper.writeValueAsString(request);

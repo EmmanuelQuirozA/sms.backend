@@ -3,6 +3,7 @@ package com.monarchsolutions.sms.controller;
 import com.monarchsolutions.sms.dto.catalogs.PaymentConceptsDto;
 import com.monarchsolutions.sms.dto.catalogs.PaymentStatusesDto;
 import com.monarchsolutions.sms.dto.catalogs.PaymentThroughDto;
+import com.monarchsolutions.sms.dto.catalogs.ScholarLevelsDto;
 import com.monarchsolutions.sms.service.CatalogsService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,5 +34,11 @@ public class CatalogController {
   public ResponseEntity<List<PaymentThroughDto>> paymentThrough(
           @RequestParam(defaultValue = "en") String lang) {
       return ResponseEntity.ok(CatalogsService.getPaymentThrough(lang));
+  }
+
+  @GetMapping("/scholar-levels")
+  public ResponseEntity<List<ScholarLevelsDto>> scholarLevels(
+          @RequestParam(defaultValue = "en") String lang) {
+      return ResponseEntity.ok(CatalogsService.getScholarLevels(lang));
   }
 }

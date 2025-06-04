@@ -46,7 +46,7 @@ public class StudentRepository {
         String payment_reference,
         String generation,
         String grade_group,
-        Boolean status_filter,
+        Boolean enabled,
 		String lang,
 		int page,
 		int size,
@@ -71,8 +71,8 @@ public class StudentRepository {
             stmt.setString(idx++, payment_reference);
             stmt.setString(idx++, generation);
             stmt.setString(idx++, grade_group);
-            if (status_filter != null) {
-                stmt.setBoolean(idx++, status_filter);
+            if (enabled != null) {
+                stmt.setBoolean(idx++, enabled);
             } else {
                 stmt.setNull(idx++, Types.BOOLEAN);
             }
@@ -178,7 +178,7 @@ public class StudentRepository {
 
 
 
-    // Get Payment Details List
+	// Get Student Details List
 	public List<GetStudent> getStudent(Long token_user_id, Long student_id, String lang){
 		// Create the stored procedure query
 		StoredProcedureQuery query = entityManager.createStoredProcedureQuery("getStudent");

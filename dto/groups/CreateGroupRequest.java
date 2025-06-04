@@ -3,7 +3,6 @@ package com.monarchsolutions.sms.dto.groups;
 public class CreateGroupRequest {
     private Long school_id;
     private Long scholar_level_id;
-    private String name;
     private String generation;
     private Number grade;
     private String group;
@@ -19,12 +18,6 @@ public class CreateGroupRequest {
     }
     public void setScholar_level_id(Long scholar_level_id) {
         this.scholar_level_id = scholar_level_id;
-    }
-    public String getName() {
-        return name;
-    }
-    public void setName(String name) {
-        this.name = name;
     }
     public String getGeneration() {
         return generation;

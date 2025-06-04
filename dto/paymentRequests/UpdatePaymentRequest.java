@@ -1,4 +1,4 @@
-package com.monarchsolutions.sms.dto.reports;
+package com.monarchsolutions.sms.dto.paymentRequests;
 
 import java.math.BigDecimal;
 import java.sql.Date;

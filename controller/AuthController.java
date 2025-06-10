@@ -1,8 +1,13 @@
 package com.monarchsolutions.sms.controller;
 
 import com.monarchsolutions.sms.dto.common.UserLoginDTO;
+import com.monarchsolutions.sms.dto.user.UserDetails;
 import com.monarchsolutions.sms.service.AuthService;
+import com.monarchsolutions.sms.service.UserService;
 import com.monarchsolutions.sms.util.JwtUtil;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +21,10 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
+	@Autowired
+	private UserService userService;
+
+
     @Autowired
     private PasswordEncoder passwordEncoder;
 
@@ -25,7 +34,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(
           @RequestParam(defaultValue = "en") String lang,
-          @RequestBody UserLoginDTO loginRequest) {
+          @RequestBody UserLoginDTO loginRequest) throws Exception {
         // Retrieve the language parameter
 
         // Retrieve user by username or email via stored procedure
@@ -62,8 +71,11 @@ public class AuthController {
         // Assume the role is provided in user.getRoleName() (adjust as necessary)
         String token = jwtUtil.generateToken(user.getUserId(), user.getSchoolId(), user.getUsername(), user.getRoleName());
         
+        Long token_user_id = jwtUtil.extractUserId(token);
+        UserDetails userDetails = userService.getUser(token_user_id, user.getUserId(), lang);
+
         // Custom response DTO with token and user details
-        return ResponseEntity.ok(new LoginResponse(token, user));
+        return ResponseEntity.ok(new LoginResponse(token, userDetails));
     }
 }
 

@@ -44,15 +44,14 @@ public class ReportsRepository {
 
 	public PageResult<Map<String,Object>> getPaymentRequests(
 		Long token_user_id,
-		Long school_id,
 		Long student_id,
+		Long school_id,
 		Long payment_request_id,
 		LocalDate pr_created_start,
 		LocalDate pr_created_end,
 		LocalDate pr_pay_by_start,
 		LocalDate pr_pay_by_end,
-		Date payment_month_start,
-		Date payment_month_end,
+		LocalDate payment_month,
 		String ps_pr_name,
 		String pt_name,
 		String payment_reference,
@@ -60,16 +59,16 @@ public class ReportsRepository {
 		Boolean sc_enabled,
 		Boolean u_enabled,
 		Boolean g_enabled,
-		Long pr_payment_status_id,
+		Integer pr_payment_status_id,
 		String grade_group,
 		String lang,
 		String order_by,
 		String order_dir,
-		int page,
-		int size,
+		Integer page,
+		Integer size,
 		boolean export_all
 	) throws SQLException {
-		String call = "{CALL getPaymentRequests(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}";
+		String call = "{CALL getPaymentRequests(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}";
 		List<Map<String,Object>> content = new ArrayList<>();
 		long totalCount = 0;
 
@@ -86,9 +85,7 @@ public class ReportsRepository {
 			if (pr_created_end != null) { stmt.setDate(idx++, java.sql.Date.valueOf(pr_created_end)); } else { stmt.setNull(idx++, Types.DATE); }				
 			if (pr_pay_by_start != null) { stmt.setDate(idx++, java.sql.Date.valueOf(pr_pay_by_start)); } else { stmt.setNull(idx++, Types.DATE); }				
 			if (pr_pay_by_end != null) { stmt.setDate(idx++, java.sql.Date.valueOf(pr_pay_by_end)); } else { stmt.setNull(idx++, Types.DATE); }				
-			
-			if (payment_month_start != null) { stmt.setDate(idx++, payment_month_start); } else { stmt.setNull(idx++, Types.DATE); }
-			if (payment_month_end != null) { stmt.setDate(idx++, payment_month_end); } else { stmt.setNull(idx++, Types.DATE); }
+			if (payment_month != null) { stmt.setDate(idx++, java.sql.Date.valueOf(payment_month)); } else { stmt.setNull(idx++, Types.DATE); }				
 
 			stmt.setString(idx++, ps_pr_name);
 			stmt.setString(idx++, pt_name);
@@ -245,6 +242,7 @@ public class ReportsRepository {
 	}
 
 	public PageResult<Map<String,Object>> getPayments(
+		Long tokenUserId,
 		Long schoolId,
 		Long studentId,
 		Long paymentId,
@@ -264,7 +262,7 @@ public class ReportsRepository {
 		String order_by,
 		String order_dir
 	) throws SQLException {
-		String call = "{CALL getPayments(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}";
+		String call = "{CALL getPayments(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}";
 		List<Map<String,Object>> content = new ArrayList<>();
 		long totalCount = 0;
 
@@ -273,6 +271,7 @@ public class ReportsRepository {
 
 			int idx = 1;
 			// 1) the four IDs
+			if (tokenUserId != null) { stmt.setInt(idx++, tokenUserId.intValue()); } else { stmt.setNull(idx++, Types.INTEGER); }
 			if (schoolId != null) { stmt.setInt(idx++, schoolId.intValue()); } else { stmt.setNull(idx++, Types.INTEGER); }
 			if (studentId != null) { stmt.setInt(idx++, studentId.intValue()); } else { stmt.setNull(idx++, Types.INTEGER); }
 			if (paymentId != null) { stmt.setInt(idx++, paymentId.intValue()); } else { stmt.setNull(idx++, Types.INTEGER); }

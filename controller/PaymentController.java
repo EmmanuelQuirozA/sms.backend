@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.monarchsolutions.sms.dto.payments.CreatePayment;
 import com.monarchsolutions.sms.dto.payments.UpdatePaymentDTO;
+import com.monarchsolutions.sms.dto.payments.ByYearPaymentsDTO;
 import com.monarchsolutions.sms.service.PaymentService;
 import com.monarchsolutions.sms.util.JwtUtil;
 import com.monarchsolutions.sms.validation.AdminGroup;
@@ -180,5 +183,30 @@ public class PaymentController {
               + e.getMessage().replace("\"","'")
               + "\",\"type\":\"error\"}");
     }
+  }
+
+
+  @PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN','STUDENT')")
+  @GetMapping("/grouped")
+  public ResponseEntity<List<ByYearPaymentsDTO>> getGroupedPayments(
+      @RequestHeader("Authorization") String authHeader,
+      @RequestParam(required = false) Integer paymentId,
+      @RequestParam(required = false) Integer paymentRequestId,
+      @RequestParam(required = false) String  ptName,
+      @RequestParam(required = false) LocalDate paymentMonth,
+      @RequestParam(required = false) LocalDate paymentCreatedAt,
+      @RequestParam(required = false, defaultValue = "false") Boolean tuitions,
+      @RequestParam(defaultValue = "en")     String lang
+  ) {
+    String token = authHeader.replaceFirst("^Bearer\\s+", "");
+    Long   tokenUser = jwtUtil.extractUserId(token);
+
+    List<ByYearPaymentsDTO> grouped =
+      paymentService.getGroupedPayments(
+        tokenUser, paymentId, paymentRequestId,
+        ptName, paymentMonth, paymentCreatedAt,
+        tuitions, lang
+      );
+    return ResponseEntity.ok(grouped);
   }
 }

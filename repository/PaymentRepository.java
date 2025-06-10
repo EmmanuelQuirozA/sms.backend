@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.monarchsolutions.sms.dto.common.PageResult;
+import com.monarchsolutions.sms.dto.payments.StudentPaymentsDTO;
 import com.monarchsolutions.sms.dto.payments.UpdatePaymentDTO;
 
 import jakarta.persistence.EntityManager;
@@ -19,6 +20,7 @@ import java.util.*;
 
 import javax.sql.DataSource;
 
+import java.math.BigDecimal;
 import java.sql.*;
 
 @Repository
@@ -203,7 +205,7 @@ public class PaymentRepository {
     query.registerStoredProcedureParameter("removeReceipt", Boolean.class, ParameterMode.IN);
     query.registerStoredProcedureParameter("lang", String.class, ParameterMode.IN);
     
-    // Set the parameters. I
+    // Set the parameters.
     query.setParameter("responsable_user_id", token_user_id);
     query.setParameter("payment_id", payment_id);
     query.setParameter("p_json", paymentDataJson);
@@ -214,4 +216,113 @@ public class PaymentRepository {
     Object result = query.getSingleResult();
     return result != null ? result.toString() : null;
   }
+
+
+	public List<StudentPaymentsDTO> getGroupedPayments(
+		Long tokenUserId,
+		Integer paymentId,
+		Integer paymentRequestId,
+		String  ptName,
+		LocalDate paymentMonth,
+		LocalDate paymentCreatedAt,
+		Boolean tuitions,
+		String  lang
+	) {
+    // Create the stored procedure query
+    StoredProcedureQuery q = em.createStoredProcedureQuery("getStudentPayments");
+
+    // 1) register IN params
+    q.registerStoredProcedureParameter("p_token_user_id",       Integer.class, ParameterMode.IN);
+    q.registerStoredProcedureParameter("p_payment_id",          Integer.class, ParameterMode.IN);
+    q.registerStoredProcedureParameter("p_payment_request_id",  Integer.class, ParameterMode.IN);
+    q.registerStoredProcedureParameter("p_pt_name",             String .class, ParameterMode.IN);
+    q.registerStoredProcedureParameter("p_payment_month",       Date   .class, ParameterMode.IN);
+    q.registerStoredProcedureParameter("p_payment_created_at",  Date   .class, ParameterMode.IN);
+    q.registerStoredProcedureParameter("p_tuitions",            Boolean.class, ParameterMode.IN);
+    q.registerStoredProcedureParameter("lang",                  String .class, ParameterMode.IN);
+
+    // 2) set parameter values
+    q.setParameter("p_token_user_id",      tokenUserId.intValue());
+    q.setParameter("p_payment_id",         paymentId);
+    q.setParameter("p_payment_request_id", paymentRequestId);
+    q.setParameter("p_pt_name",            ptName);
+    q.setParameter("p_payment_month",      paymentMonth != null ? java.sql.Date.valueOf(paymentMonth) : null);
+    q.setParameter("p_payment_created_at", paymentCreatedAt != null ? java.sql.Date.valueOf(paymentCreatedAt) : null);
+    q.setParameter("p_tuitions",           tuitions);
+    q.setParameter("lang",                 lang);
+
+    // 3) execute and grab the result set
+    q.execute();
+    @SuppressWarnings("unchecked")
+		List<Object[]> rows = q.getResultList();
+
+    // 4) map each row to your DTO
+    List<StudentPaymentsDTO> out = new ArrayList<>(rows.size());
+    for (Object[] r : rows) {
+      StudentPaymentsDTO dto = new StudentPaymentsDTO();
+			dto.setPaymentId(r[0] != null? ((Number) r[0]).intValue(): null);
+			dto.setStudentId(r[1] != null? ((Number) r[1]).intValue(): null);
+			dto.setSchoolId(r[2] != null? ((Number) r[2]).intValue(): null);
+
+			Object pmObj = r[3];
+			if (pmObj instanceof java.sql.Timestamp) {
+				dto.setPaymentMonth(
+					((java.sql.Timestamp) pmObj)
+						.toLocalDateTime()
+						.toLocalDate()
+				);
+			} else if (pmObj instanceof java.sql.Date) {
+				dto.setPaymentMonth(
+					((java.sql.Date) pmObj)
+						.toLocalDate()
+				);
+			} else {
+				dto.setPaymentMonth(null);
+			}
+
+			dto.setAmount( r[4] != null ? (BigDecimal) r[4] : null);
+			dto.setPaymentStatusId( r[5] != null ? ((Number) r[5]).intValue() : null);
+			dto.setPaymentThroughId( r[6] != null ? ((Number) r[6]).intValue() : null);
+			dto.setPaymentConceptId( r[7] != null ? ((Number) r[7]).intValue() : null);
+
+			Object vaObj = r[8];
+			if (vaObj instanceof java.sql.Timestamp) {
+				dto.setValidatedAt(
+					((java.sql.Timestamp) vaObj).toLocalDateTime()
+				);
+			} else {
+				dto.setValidatedAt(null);
+			}
+
+			Object pcObj = r[9];
+			if (pcObj instanceof java.sql.Timestamp) {
+				dto.setPaymentCreatedAt(
+					((java.sql.Timestamp) pcObj).toLocalDateTime()
+				);
+			} else {
+				dto.setPaymentCreatedAt(null);
+			}
+
+			Object uaObj = r[10];
+			if (uaObj instanceof java.sql.Timestamp) {
+				dto.setUpdatedAt(
+					((java.sql.Timestamp) uaObj).toLocalDateTime()
+				);
+			} else {
+				dto.setUpdatedAt(null);
+			}
+
+			dto.setComments( r[11] != null ? r[11].toString() : null);
+			dto.setPartConceptName( r[12] != null ? r[12].toString() : null);
+			dto.setPaymentThroughName( r[13] != null ? r[13].toString() : null);
+			dto.setPaymentStatusName( r[14] != null ? r[14].toString() : null);
+			dto.setValidatorFullName( r[15] != null ? r[15].toString() : null);
+			dto.setPaymentRequestId( r[16] != null ? ((Number) r[16]).intValue() : null);
+			dto.setReceiptPath( r[17] != null ? r[17].toString() : null);
+			dto.setReceiptFileName( r[18] != null ? r[18].toString() : null);
+      out.add(dto);
+    }
+    return out;
+  }
+
 }

@@ -27,7 +27,7 @@ public class FilesController {
   @Value("${app.upload-dir}")
   private String uploadDir;
 
-  @PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN')")
+  @PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN','STUDENT')")
   @GetMapping("/api/protectedfiles/{filename:.+}")
   public ResponseEntity<Resource> serveProtectedFile(
       @PathVariable String filename,

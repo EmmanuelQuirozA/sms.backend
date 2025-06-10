@@ -5,6 +5,7 @@ import com.monarchsolutions.sms.dto.student.UpdateStudentRequest;
 import com.monarchsolutions.sms.dto.common.PageResult;
 import com.monarchsolutions.sms.dto.student.CreateStudentRequest;
 import com.monarchsolutions.sms.dto.student.GetStudent;
+import com.monarchsolutions.sms.dto.student.GetStudentDetails;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -14,6 +15,7 @@ import jakarta.persistence.StoredProcedureQuery;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -259,4 +261,70 @@ public class StudentRepository {
 
 		return MapperUtil.mapRow(data, config, GetStudent.class);
 	}
+
+	// Get Student Details List Read Only prepared
+	public List<GetStudentDetails> getStudentDetails(Long token_user_id, Long student_id, String lang){
+		// Create the stored procedure query
+		StoredProcedureQuery query = entityManager.createStoredProcedureQuery("getStudentDetails");
+
+		// Register IN parameters
+		query.registerStoredProcedureParameter("user_school_id", Long.class, ParameterMode.IN);
+		query.registerStoredProcedureParameter("student_id", Long.class, ParameterMode.IN);
+		query.registerStoredProcedureParameter("lang", String.class, ParameterMode.IN);
+
+		// Set the parameter values
+		query.setParameter("user_school_id", token_user_id);
+		query.setParameter("student_id", student_id);
+		query.setParameter("lang", lang);
+
+		// Execute the stored procedure
+		query.execute();
+
+		// Retrieve the results as a list of Object arrays
+		@SuppressWarnings("unchecked")
+		List<Object[]> results = query.getResultList();
+		List<GetStudentDetails> student = new ArrayList<>();
+
+		for (Object[] data : results) {
+				student.add(mapStudent(data));
+		}
+		return student;
+	}
+
+	private GetStudentDetails mapStudent(Object[] data) {
+		MappingConfig[] config = new MappingConfig[] {
+			new MappingConfig("studentId", Long.class),
+			new MappingConfig("userId", Long.class),
+			new MappingConfig("registerId", String.class),
+			new MappingConfig("paymentReference", String.class),
+			new MappingConfig("email", String.class),
+			new MappingConfig("username", String.class),
+			new MappingConfig("fullName", String.class),
+			new MappingConfig("address", String.class),
+			new MappingConfig("commercialName", String.class),
+			new MappingConfig("groupName", String.class),
+			new MappingConfig("generation", String.class),
+			new MappingConfig("gradeGroup", String.class),
+			new MappingConfig("scholarLevelName", String.class),
+			new MappingConfig("birthDate", LocalDate.class),
+			new MappingConfig("phoneNumber", String.class),
+			new MappingConfig("taxId", String.class),
+			new MappingConfig("personalEmail", String.class),
+			new MappingConfig("userEnabled", Boolean.class),
+			new MappingConfig("roleEnabled", Boolean.class),
+			new MappingConfig("schoolEnabled", Boolean.class),
+			new MappingConfig("groupEnabled", Boolean.class),
+			new MappingConfig("userStatus", String.class),
+			new MappingConfig("roleStatus", String.class),
+			new MappingConfig("schoolStatus", String.class),
+			new MappingConfig("groupStatus", String.class),
+			new MappingConfig("joiningDate", LocalDate.class),
+			new MappingConfig("tuition", BigDecimal.class),
+			new MappingConfig("defaultTuition", BigDecimal.class),
+			new MappingConfig("balance", BigDecimal.class)
+		};
+
+		return MapperUtil.mapRow(data, config, GetStudentDetails.class);
+	}
+
 }

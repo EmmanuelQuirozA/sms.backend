@@ -76,7 +76,8 @@ public class ReportsService {
 
     @Transactional(readOnly = true)
     public PageResult<Map<String,Object>> getPayments(
-        Long schoolId,
+        Long token_user_id,
+        Long school_id,
         Long student_id,
         Long payment_id,
         Long payment_request_id,
@@ -96,7 +97,8 @@ public class ReportsService {
         String order_dir
     ) throws Exception {
         return reportsRepository.getPayments(
-            schoolId,
+            token_user_id,
+            school_id,
             student_id,
             payment_id,
             payment_request_id,
@@ -122,15 +124,14 @@ public class ReportsService {
     @Transactional(readOnly = true)
     public PageResult<Map<String,Object>> getPaymentRequests(
         Long token_user_id,
-        Long school_id,
         Long student_id,
+        Long school_id,
         Long payment_request_id,
         LocalDate pr_created_start,
         LocalDate pr_created_end,
         LocalDate pr_pay_by_start,
         LocalDate pr_pay_by_end,
-        Date payment_month_start,
-        Date payment_month_end,
+        LocalDate payment_month,
         String ps_pr_name,
         String pt_name,
         String payment_reference,
@@ -138,13 +139,13 @@ public class ReportsService {
         Boolean sc_enabled,
         Boolean u_enabled,
         Boolean g_enabled,
-        Long pr_payment_status_id,
+        Integer pr_payment_status_id,
         String grade_group,
         String lang,
         String order_by,
         String order_dir,
-        int page,
-        int size,
+        Integer page,
+        Integer size,
         boolean export_all
     ) throws Exception {
         return reportsRepository.getPaymentRequests(
@@ -156,8 +157,7 @@ public class ReportsService {
 			pr_created_end,
 			pr_pay_by_start,
 			pr_pay_by_end,
-			payment_month_start,
-			payment_month_end,
+			payment_month,
 			ps_pr_name,
 			pt_name,
 			payment_reference,

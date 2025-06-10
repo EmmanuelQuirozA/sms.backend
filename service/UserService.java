@@ -75,8 +75,9 @@ public class UserService {
         return jsonResponse;
     }
 
-    public List<UserDetails> getUser(Long token_user_id, Long userId, String lang) throws Exception {
+    public UserDetails getUser(Long token_user_id, Long userId, String lang) throws Exception {
         // Call the repository method that converts the request to JSON and executes the stored procedure
-        return userRepository.getUser(token_user_id, userId, lang);
+        List<UserDetails> rows = userRepository.getUser(token_user_id, userId, lang);
+        return rows.stream().findFirst().orElse(null);
     }
 }

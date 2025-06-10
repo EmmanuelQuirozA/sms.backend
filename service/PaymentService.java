@@ -1,11 +1,13 @@
  package com.monarchsolutions.sms.service;
 
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -17,11 +19,15 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.monarchsolutions.sms.dto.common.PageResult;
+import com.monarchsolutions.sms.dto.payments.ByMonthPaymentsDTO;
+import com.monarchsolutions.sms.dto.payments.ByYearPaymentsDTO;
 import com.monarchsolutions.sms.dto.payments.CreatePayment;
+import com.monarchsolutions.sms.dto.payments.StudentPaymentsDTO;
 import com.monarchsolutions.sms.dto.payments.UpdatePaymentDTO;
 import com.monarchsolutions.sms.repository.PaymentRepository;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PaymentService {
@@ -112,5 +118,76 @@ public class PaymentService {
     );
   }
 
+  public List<ByYearPaymentsDTO> getGroupedPayments(
+    Long tokenUserId,
+    Integer paymentId,
+    Integer paymentRequestId,
+    String  ptName,
+    LocalDate paymentMonth,
+    LocalDate paymentCreatedAt,
+    Boolean tuitions,
+    String  lang
+  ) {
+    List<StudentPaymentsDTO> flat = repo.getGroupedPayments(
+      tokenUserId, paymentId, paymentRequestId,
+      ptName, paymentMonth, paymentCreatedAt,
+      tuitions, lang
+    );
+
+    // 2) drop any rows with null paymentMonth
+    List<StudentPaymentsDTO> withDates = flat.stream()
+      .filter(p -> p.getPaymentMonth() != null)
+      .collect(Collectors.toList());
+
+    // 3) group by year → month
+    Map<Integer, Map<Integer, List<StudentPaymentsDTO>>> grouped;
+    // If tuition. group by year → payment_month
+    if (tuitions) {
+      grouped = withDates.stream()
+        .collect(Collectors.groupingBy(
+          p -> p.getPaymentMonth().getYear(),
+          LinkedHashMap::new,
+          Collectors.groupingBy(
+            p -> p.getPaymentMonth().getMonthValue(),
+            LinkedHashMap::new,
+            Collectors.toList()
+          )
+        ));
+    // Else. group by year → payment.created_at
+    } else {
+      grouped = flat.stream()
+        .collect(Collectors.groupingBy(
+          p -> p.getPaymentCreatedAt().getYear(),
+          LinkedHashMap::new,
+          Collectors.groupingBy(
+            p -> p.getPaymentCreatedAt().getMonthValue(),
+            LinkedHashMap::new,
+            Collectors.toList()
+          )
+        ));
+    }
+
+    // 4) build the DTOs
+    List<ByYearPaymentsDTO> result = new ArrayList<>();
+    for (var yearEntry : grouped.entrySet()) {
+      int year = yearEntry.getKey();
+      List<ByMonthPaymentsDTO> months = new ArrayList<>();
+
+      for (var monthEntry : yearEntry.getValue().entrySet()) {
+        int month = monthEntry.getKey();
+        List<StudentPaymentsDTO> items = monthEntry.getValue();
+
+        BigDecimal total = items.stream()
+          .map(StudentPaymentsDTO::getAmount)
+          .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        months.add(new ByMonthPaymentsDTO(month, total, items));
+      }
+
+      result.add(new ByYearPaymentsDTO(year, months));
+    }
+
+    return result;
+  }
 
 }

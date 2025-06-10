@@ -1,5 +1,6 @@
 package com.monarchsolutions.sms.controller;
 
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -13,14 +14,19 @@ import org.springframework.web.bind.annotation.*;
 
 import com.monarchsolutions.sms.dto.catalogs.ScholarLevelsDto;
 import com.monarchsolutions.sms.dto.paymentRequests.CreatePaymentRequestDTO;
+import com.monarchsolutions.sms.dto.paymentRequests.StudentPaymentRequestDTO;
 import com.monarchsolutions.sms.dto.paymentRequests.ValidatePaymentRequestExistence;
 import com.monarchsolutions.sms.service.CatalogsService;
 import com.monarchsolutions.sms.service.PaymentRequestService;
+import com.monarchsolutions.sms.service.StudentService;
 import com.monarchsolutions.sms.util.JwtUtil;
 
 @RestController
 @RequestMapping("/api/payment-requests")
 public class PaymentRequestController {
+    
+	@Autowired
+	private StudentService studentService;
 
     @Autowired
     private PaymentRequestService paymentRequestService;
@@ -90,5 +96,42 @@ public class PaymentRequestController {
             );
         return ResponseEntity.ok(results);
     }
-  
+
+    @PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN','STUDENT')")
+    @GetMapping("/pending")
+    public ResponseEntity<BigDecimal> getPendingByStudent(
+        @RequestHeader("Authorization") String authHeader,
+        @RequestParam(required = false) Long   studentId
+    ) {
+        // 2) Extract the token and get userId
+        String token = authHeader.substring(7);
+        Long token_user_id = jwtUtil.extractUserId(token);
+        BigDecimal pending = paymentRequestService.getPendingByStudent(token_user_id,studentId);
+        return ResponseEntity.ok(pending);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN','STUDENT')")
+    @GetMapping("/student-pending-payments")
+    public ResponseEntity<List<StudentPaymentRequestDTO>> list(
+        @RequestHeader("Authorization") String authHeader,
+        @RequestParam(defaultValue = "en")     String lang
+    ) {
+        // strip off "Bearer "
+        String token       = authHeader.replaceFirst("^Bearer\\s+", "");
+        Long   tokenUserId = jwtUtil.extractUserId(token);
+        String role        = jwtUtil.extractUserRole(token);
+
+        // STUDENTs only see their own
+        Long effectiveStudentId = null;
+        if ("STUDENT".equalsIgnoreCase(role)) {
+        effectiveStudentId = studentService
+            .getStudentDetails(tokenUserId, null, lang)
+            .getStudentId();
+        }
+
+        List<StudentPaymentRequestDTO> list =
+        paymentRequestService.getStudentPaymentRequests(effectiveStudentId, lang);
+
+        return ResponseEntity.ok(list);
+    }
 }

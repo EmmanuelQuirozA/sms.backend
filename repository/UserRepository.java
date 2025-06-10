@@ -62,45 +62,23 @@ public class UserRepository {
 		Object[] data = (Object[]) result;
 		UserLoginDTO user = new UserLoginDTO();
 		// Mapping
+
 		user.setUserId(data[0] != null ? ((Number) data[0]).longValue() : null);
-		user.setPersonId(data[1] != null ? ((Number) data[1]).longValue() : null);
-		user.setSchoolId(data[2] != null ? ((Number) data[2]).longValue() : null);
-		user.setRoleId(data[3] != null ? ((Number) data[3]).longValue() : null);
-		user.setEmail(data[4] != null ? (String) data[4] : null);
-		user.setUsername(data[5] != null ? (String) data[5] : null);
-		user.setPassword(data[6] != null ? (String) data[6] : null);
-		user.setRoleName(data[7] != null ? (String) data[7] : null);
-		user.setRoleNameLang(data[8] != null ? (String) data[8] : null);
-		user.setFullName(data[9] != null ? (String) data[9] : null);
-		user.setAddress(data[10] != null ? (String) data[10] : null);
-		user.setCommercialName(data[11] != null ? (String) data[11] : null);
-		user.setBusinessName(data[12] != null ? (String) data[12] : null);
-		user.setFirstName(data[13] != null ? (String) data[13] : null);
-		user.setLastNameFather(data[14] != null ? (String) data[14] : null);
-		user.setLastNameMother(data[15] != null ? (String) data[15] : null);
-		user.setBirthDate(data[16] != null ? data[16].toString() : null);
-		user.setPhoneNumber(data[17] != null ? (String) data[17] : null);
-		user.setTaxId(data[18] != null ? (String) data[18] : null);
-		user.setExtNumber(data[19] != null ? (String) data[19] : null);
-		user.setIntNumber(data[20] != null ? (String) data[20] : null);
-		user.setSuburb(data[21] != null ? (String) data[21] : null);
-		user.setLocality(data[22] != null ? (String) data[22] : null);
-		user.setMunicipality(data[23] != null ? (String) data[23] : null);
-		user.setState(data[24] != null ? (String) data[24] : null);
-		user.setPersonalEmail(data[25] != null ? (String) data[25] : null);
-		user.setImage(data[26] != null ? (String) data[26] : null);
-
-		// Boolean status values
-		user.setEnabledUser(data[27] != null ? ((Boolean) data[27]) : null);
-		user.setEnabledRole(data[28] != null ? ((Boolean) data[28]) : null);
-		user.setEnabledSchool(data[29] != null ? ((Boolean) data[29]) : null);
-
-		user.setBirthDateFormated(data[30] != null ? (String) data[30] : null);
-
-		// String status values
-		user.setUserStatus(data[31] != null ? (String) data[31] : null);
-		user.setRoleStatus(data[32] != null ? (String) data[32] : null);
-		user.setSchoolStatus(data[33] != null ? (String) data[33] : null);
+		user.setSchoolId(data[1] != null ? ((Number) data[1]).longValue() : null);
+		user.setRoleId(data[2] != null ? ((Number) data[2]).longValue() : null);
+		user.setEmail(data[3] != null ? (String) data[3] : null);
+		user.setUsername(data[4] != null ? (String) data[4] : null);
+		user.setPassword(data[5] != null ? (String) data[5] : null);
+		user.setRoleName(data[6] != null ? (String) data[6] : null);
+		user.setFullName(data[7] != null ? (String) data[7] : null);
+		user.setAddress(data[8] != null ? (String) data[8] : null);
+		user.setCommercialName(data[9] != null ? (String) data[9] : null);
+		user.setBusinessName(data[10] != null ? (String) data[10] : null);
+		user.setPersonalEmail(data[11] != null ? (String) data[11] : null);
+		user.setEnabledUser(data[12] != null ? (Boolean) data[12] : null);
+		user.setEnabledRole(data[13] != null ? (Boolean) data[13] : null);
+		user.setEnabledSchool(data[14] != null ? (Boolean) data[14] : null);
+		user.setUsernameOrEmail(data[15] != null ? (String) data[15] : null);
 		
 		return user;
 	}

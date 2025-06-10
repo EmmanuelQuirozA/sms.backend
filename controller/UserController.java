@@ -195,7 +195,7 @@ public class UserController {
 		try {
 			String token = authHeader.substring(7);
 			Long token_user_id = jwtUtil.extractUserId(token);
-			List<UserDetails> user = userService.getUser(token_user_id, userId, lang);
+			UserDetails user = userService.getUser(token_user_id, userId, lang);
 			return ResponseEntity.ok(user);
 		} catch (Exception e) {
 			return ResponseEntity.badRequest().body(e.getMessage());

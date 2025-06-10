@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.monarchsolutions.sms.dto.common.PageResult;
 import com.monarchsolutions.sms.dto.student.CreateStudentRequest;
 import com.monarchsolutions.sms.dto.student.GetStudent;
+import com.monarchsolutions.sms.dto.student.GetStudentDetails;
 import com.monarchsolutions.sms.dto.student.UpdateStudentRequest;
 import com.monarchsolutions.sms.repository.StudentRepository;
 
@@ -74,5 +75,11 @@ public class StudentService {
     public List<GetStudent> getStudent(Long token_user_id, Long user_id, String lang) {
         return studentRepository.getStudent(token_user_id, user_id, lang);
     }
+
+    public GetStudentDetails getStudentDetails(Long token_user_id, Long student_id, String lang) {
+        List<GetStudentDetails > rows = studentRepository.getStudentDetails(token_user_id, student_id, lang);
+        return rows.stream().findFirst().orElse(null);
+    }
+
 
 }

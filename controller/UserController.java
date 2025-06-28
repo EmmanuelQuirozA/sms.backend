@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.monarchsolutions.sms.dto.common.PageResult;
 import com.monarchsolutions.sms.dto.user.CreateUserRequest;
 import com.monarchsolutions.sms.dto.user.UpdateUserRequest;
+import com.monarchsolutions.sms.dto.user.UserBalanceDTO;
 import com.monarchsolutions.sms.dto.user.UserDetails;
+import com.monarchsolutions.sms.dto.user.UsersBalanceDTO;
 import com.monarchsolutions.sms.service.UserService;
 import com.monarchsolutions.sms.util.JwtUtil;
 import com.monarchsolutions.sms.validation.AdminGroup;
@@ -201,4 +203,33 @@ public class UserController {
 			return ResponseEntity.badRequest().body(e.getMessage());
 		}
 	}
+
+	// @PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN')")
+  // @GetMapping("/balances")
+  // public ResponseEntity<List<UserBalanceDTO>> getActiveUserBalances(
+  //     @RequestHeader("Authorization") String authHeader,
+	// 		@RequestParam(required = false) String search_criteria
+  // ) {
+  //   // strip off "Bearer "
+  //   String token    = authHeader.replaceFirst("^Bearer\\s+", "");
+  //   Long   schoolId = jwtUtil.extractSchoolId(token);
+
+  //   List<UserBalanceDTO> balances = userService.getActiveUserBalances(schoolId, search_criteria);
+  //   return ResponseEntity.ok(balances);
+  // }
+	
+	@PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN','FINANCE')")
+  @GetMapping("/balances")
+  public ResponseEntity<List<UsersBalanceDTO>> getUsersBalance(
+      @RequestHeader("Authorization") String authHeader,
+			@RequestParam(required = false) String full_name,
+			@RequestParam(required = false) String lang
+  ) {
+    // strip off "Bearer "
+    String token    = authHeader.replaceFirst("^Bearer\\s+", "");
+    Long   schoolId = jwtUtil.extractSchoolId(token);
+
+    List<UsersBalanceDTO> balances = userService.getUsersBalance(full_name, lang);
+    return ResponseEntity.ok(balances);
+  }
 }

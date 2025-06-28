@@ -3,7 +3,9 @@ package com.monarchsolutions.sms.service;
 import com.monarchsolutions.sms.dto.common.PageResult;
 import com.monarchsolutions.sms.dto.user.CreateUserRequest;
 import com.monarchsolutions.sms.dto.user.UpdateUserRequest;
+import com.monarchsolutions.sms.dto.user.UserBalanceDTO;
 import com.monarchsolutions.sms.dto.user.UserDetails;
+import com.monarchsolutions.sms.dto.user.UsersBalanceDTO;
 import com.monarchsolutions.sms.repository.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -79,5 +81,13 @@ public class UserService {
         // Call the repository method that converts the request to JSON and executes the stored procedure
         List<UserDetails> rows = userRepository.getUser(token_user_id, userId, lang);
         return rows.stream().findFirst().orElse(null);
+    }
+
+    public List<UserBalanceDTO> getActiveUserBalances(Long schoolId, String search_criteria) {
+        return userRepository.findActiveUserBalancesBySchoolId(schoolId, search_criteria);
+    }
+
+    public List<UsersBalanceDTO> getUsersBalance(String full_name, String lang) {
+        return userRepository.getUsersBalance(full_name, lang);
     }
 }

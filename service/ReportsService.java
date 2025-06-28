@@ -176,11 +176,40 @@ public class ReportsService {
         );
     }
 
-    public List<BalanceRechargeResponse> getBalanceRecharges(Long tokenSchoolId, Long user_id, String lang){
+    public List<BalanceRechargeResponse> getBalanceRecharge(Long tokenSchoolId, Long user_id, String lang){
         // If tokenSchoolId is not null, the SP will filter students by school.
-        return reportsRepository.getBalanceRecharges(tokenSchoolId, user_id, lang);
+        return reportsRepository.getBalanceRecharge(tokenSchoolId, user_id, lang);
     }
-    
+
+    @Transactional(readOnly = true)
+    public PageResult<Map<String,Object>> getBalanceRecharges(
+        Long token_school_id,
+        Long user_id,
+        Long school_id,
+        String full_name,
+        LocalDate created_at,
+        String lang,
+        int page,
+        int size,
+        Boolean exportAll,
+        String order_by,
+        String order_dir
+    ) throws Exception {
+        return reportsRepository.getBalanceRecharges(
+        token_school_id,
+        user_id,
+        school_id,
+        full_name,
+        created_at,
+        lang,
+        page,
+        size,
+        exportAll,
+        order_by,
+        order_dir
+        );
+    }
+        
     public String updatePaymentRequest(long paymentRequestId, long responsableUserId, Map<String,Object> jsonData, String lang) throws Exception {
         return reportsRepository.updatePaymentRequest(paymentRequestId, responsableUserId, jsonData, lang);
     }

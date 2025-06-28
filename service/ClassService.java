@@ -13,7 +13,6 @@ import java.util.*;
 public class ClassService {
 
   @Autowired
-
   private ClassRepository classRepository;
 
   @Transactional(readOnly = true)

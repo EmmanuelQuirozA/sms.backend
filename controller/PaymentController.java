@@ -72,6 +72,7 @@ public class PaymentController {
       @RequestPart(value = "receipt", required = false) MultipartFile receipt,
       @RequestParam(defaultValue = "es") String lang
   ) throws IOException {
+    System.out.println(request);
 
     // 1) Normalize “YYYY-MM” → “YYYY-MM-01”
     String pm = request.getPayment_month();

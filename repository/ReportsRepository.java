@@ -412,7 +412,7 @@ public class ReportsRepository {
 	}
 
 	// Get Student Balance List
-	public List<BalanceRechargeResponse> getBalanceRecharges(Long tokenSchoolId, Long user_id, String lang){
+	public List<BalanceRechargeResponse> getBalanceRecharge(Long tokenSchoolId, Long user_id, String lang){
 		// Create the stored procedure query
 		StoredProcedureQuery query = entityManager.createStoredProcedureQuery("getBalanceRecharge");
 
@@ -438,6 +438,86 @@ public class ReportsRepository {
 				balanceRecharges.add(mapBalanceRecharges(data));
 		}
 		return balanceRecharges;
+	}
+
+	public PageResult<Map<String,Object>> getBalanceRecharges(
+		Long token_user_id,
+    Long user_id,
+    Long school_id,
+    String full_name,
+    LocalDate created_at,
+    String lang,
+    int page,
+    int size,
+    Boolean exportAll,
+    String order_by,
+    String order_dir
+	) throws SQLException {
+		String call = "{CALL getBalanceRecharges(?,?,?,?,?,?,?,?,?,?,?)}";
+		List<Map<String,Object>> content = new ArrayList<>();
+		long totalCount = 0;
+
+		try (Connection conn = dataSource.getConnection();
+			CallableStatement stmt = conn.prepareCall(call)) {
+
+			int idx = 1;
+			// 1) the four IDs
+			if (token_user_id != null) { stmt.setInt(idx++, token_user_id.intValue()); } else { stmt.setNull(idx++, Types.INTEGER); }
+			if (user_id != null) { stmt.setInt(idx++, user_id.intValue()); } else { stmt.setNull(idx++, Types.INTEGER); }
+			if (school_id != null) { stmt.setInt(idx++, school_id.intValue()); } else { stmt.setNull(idx++, Types.INTEGER); }
+
+			// 2) the filters
+			stmt.setString(idx++, full_name);
+      // stmt.setDate(idx++, java.sql.Date.valueOf(created_at));
+      if (created_at != null) {
+          stmt.setDate(idx++, java.sql.Date.valueOf(created_at));
+      } else {
+          stmt.setNull(idx++, Types.DATE);
+      }
+
+			stmt.setString(idx++, lang);
+			int offsetParam = page;     // rename 'page' var to 'offsetParam'
+			int limitParam  = size;     // rename 'size' var to 'limitParam'
+			// 15. offset
+			if (exportAll) {
+				stmt.setNull(idx++, Types.INTEGER);
+				stmt.setNull(idx++, Types.INTEGER);
+			} else {
+				stmt.setInt(idx++, offsetParam);
+				stmt.setInt(idx++, limitParam);
+			}
+			// 17. export_all
+			stmt.setBoolean(idx++, exportAll);
+			stmt.setString(idx++, order_by);
+			stmt.setString(idx++, order_dir);
+				
+			// -- execute & read page result --
+			Boolean hasRs = stmt.execute();
+			if (hasRs) {
+				try (ResultSet rs = stmt.getResultSet()) {
+					ResultSetMetaData md = rs.getMetaData();
+					int cols = md.getColumnCount();
+					while (rs.next()) {
+						Map<String,Object> row = new LinkedHashMap<>();
+						for (int c = 1; c <= cols; c++) {
+							row.put(md.getColumnLabel(c), rs.getObject(c));
+						}
+						content.add(row);
+					}
+				}
+			}
+
+			// -- advance to the second resultset: total count --
+			if (stmt.getMoreResults()) {
+				try (ResultSet rs2 = stmt.getResultSet()) {
+					if (rs2.next()) {
+						totalCount = rs2.getLong(1);
+					}
+				}
+			}
+		}
+
+		return new PageResult<>(content, totalCount, page, size);
 	}
 
 	private BalanceRechargeResponse mapBalanceRecharges(Object[] data) {

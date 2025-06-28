@@ -36,4 +36,8 @@ public class SchoolService {
         return schoolRepository.changeSchoolStatus(tokenSchoolId, school_id, lang);
     }
 
+    public String getSchoolImage(Long school_id) {
+        return schoolRepository.getSchoolImage(school_id);
+    }
+
 }

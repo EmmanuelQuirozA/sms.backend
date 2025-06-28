@@ -253,21 +253,69 @@ public class ReportsController {
 	}
 
 	// Endpoint for retrieving the list of paymentDetails.
-	@PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN')")
-	@GetMapping("/balancerecharges")
-	public ResponseEntity<?> getBalanceRecharges(
+	@PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN','FINANCE','STUDENT')")
+	@GetMapping("/balancerecharge")
+	public ResponseEntity<?> getBalanceRecharge(
 										@RequestHeader("Authorization") String authHeader,
 										@RequestParam(required = false) Long user_id,
 										@RequestParam(defaultValue = "en") String lang) {
 		try {
 			String token = authHeader.substring(7);
 			Long tokenSchoolId = jwtUtil.extractSchoolId(token);
-			List<BalanceRechargeResponse> paymentDetails = reportsService.getBalanceRecharges(tokenSchoolId, user_id, lang);
+			List<BalanceRechargeResponse> paymentDetails = reportsService.getBalanceRecharge(tokenSchoolId, user_id, lang);
 			return ResponseEntity.ok(paymentDetails);
 		} catch (Exception e) {
 			return ResponseEntity.badRequest().body(e.getMessage());
 		}
 	}
+
+	  // Endpoint for retrieving the list of paymentDetails.
+  @PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN','FINANCE','STUDENT')")
+  @GetMapping("/balance-recharges")
+  public ResponseEntity<?> getBalanceRecharges(
+    @RequestHeader("Authorization") String authHeader,
+    @RequestParam(required = false) Long user_id,
+    @RequestParam(required = false) Long school_id,
+    @RequestParam(required = false) String full_name,
+    @RequestParam(required = false) LocalDate created_at,
+    @RequestParam(defaultValue = "en")          String lang,
+    @RequestParam(defaultValue = "0")           Integer offset,
+    @RequestParam(defaultValue = "10")          Integer limit,
+    @RequestParam(name = "export_all", defaultValue = "false") Boolean exportAll,
+    @RequestParam(required = false) String order_by,
+    @RequestParam(required = false) String order_dir
+  ) throws Exception {
+    try {
+      // strip off "Bearer "
+      String token    = authHeader.replaceFirst("^Bearer\\s+", "");
+      Long   token_user_id = jwtUtil.extractUserId(token);
+			String role        = jwtUtil.extractUserRole(token);
+
+			// 2) if STUDENT, override student_id with their own
+			Long effectiveuserId = user_id;
+			if ("STUDENT".equalsIgnoreCase(role)) {
+				effectiveuserId = token_user_id;
+			}
+
+      PageResult<Map<String,Object>> page = reportsService.getBalanceRecharges(
+        token_user_id,
+        effectiveuserId,
+        school_id,
+        full_name,
+        created_at,
+        lang,
+        offset,
+        limit,
+        exportAll,
+        order_by,
+        order_dir
+      );
+
+      return ResponseEntity.ok(page);
+    } catch (Exception e) {
+      return ResponseEntity.badRequest().body(e.getMessage());
+    }
+  }
 
 	@PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN')")
 	@GetMapping("/paymentrequest/details")

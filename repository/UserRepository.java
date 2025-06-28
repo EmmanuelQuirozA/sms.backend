@@ -5,11 +5,14 @@ import com.monarchsolutions.sms.dto.common.PageResult;
 import com.monarchsolutions.sms.dto.common.UserLoginDTO;
 import com.monarchsolutions.sms.dto.user.UserDetails;
 import com.monarchsolutions.sms.dto.user.UserListDTO;
+import com.monarchsolutions.sms.dto.user.UsersBalanceDTO;
 import com.monarchsolutions.sms.dto.user.CreateUserRequest;
 import com.monarchsolutions.sms.dto.user.UpdateUserRequest;
+import com.monarchsolutions.sms.dto.user.UserBalanceDTO;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import jakarta.persistence.ParameterMode;
 import jakarta.persistence.StoredProcedureQuery;
 
@@ -301,4 +304,80 @@ public class UserRepository {
 		return MapperUtil.mapRow(data, config, UserDetails.class);
 	}
 
+	public List<UserBalanceDTO> findActiveUserBalancesBySchoolId(Long schoolId, String search_criteria) {
+    String sql = """
+      SELECT 
+        u.user_id,
+        CONCAT(p.first_name,' ',p.last_name_father,' ',p.last_name_mother) AS full_name,
+        p.balance
+      FROM users u
+      JOIN persons p ON u.person_id = p.person_id
+      WHERE u.school_id = :schoolId
+        AND u.enabled = 1
+      	AND CONCAT(p.first_name,' ',p.last_name_father,' ',p.last_name_mother)
+          LIKE :search
+			LIMIT 6
+      """;
+
+    Query q = entityManager.createNativeQuery(sql)
+      .setParameter("schoolId", schoolId)
+      .setParameter("search",
+          "%" + (search_criteria == null ? "" : search_criteria.trim()) + "%");
+
+    @SuppressWarnings("unchecked")
+    List<Object[]> rows = q.getResultList();
+    List<UserBalanceDTO> out = new ArrayList<>(rows.size());
+    for (Object[] r : rows) {
+      Long       userId   = ((Number) r[0]).longValue();
+      String     fullName = (String)   r[1];
+      BigDecimal balance  = (BigDecimal) r[2];
+      out.add(new UserBalanceDTO(userId, fullName, balance));
+    }
+    return out;
+  }
+
+	public List<UsersBalanceDTO>  getUsersBalance(String full_name, String lang) {
+		String sql = """
+			SELECT
+				u.user_id,
+				CONCAT(p.first_name, ' ', p.last_name_father, ' ', p.last_name_mother) AS full_name,
+				CASE WHEN :lang = 'en' THEN r.name_en ELSE r.name_es END            AS role_name,
+				g.generation,
+				CASE WHEN :lang = 'en' THEN sl.name_en ELSE sl.name_es END         AS scholar_level_name,
+				CONCAT(g.grade,'-',g.`group`) AS grade_group,
+				p.balance
+			FROM users u
+			JOIN persons p ON u.person_id = p.person_id
+			JOIN roles   r ON u.role_id   = r.role_id
+			LEFT JOIN students       s  ON u.user_id   = s.user_id
+			LEFT JOIN schools        sc ON u.school_id = sc.school_id
+			LEFT JOIN `groups`       g  ON s.group_id  = g.group_id
+			LEFT JOIN scholar_levels sl ON g.scholar_level_id = sl.scholar_level_id
+			WHERE u.enabled = 1
+				AND CONCAT(p.first_name, ' ', p.last_name_father, ' ', p.last_name_mother)
+						LIKE CONCAT('%', :full_name, '%')
+			""";
+
+		Query q = entityManager.createNativeQuery(sql);
+		// bind parameters _without_ the leading colon:
+		q.setParameter("lang",      lang);
+		q.setParameter("full_name", full_name == null ? "" : full_name.trim());
+
+    @SuppressWarnings("unchecked")
+    List<Object[]> rows = q.getResultList();
+
+    List<UsersBalanceDTO> list = new ArrayList<>(rows.size());
+    for (Object[] r : rows) {
+      UsersBalanceDTO dto = new UsersBalanceDTO();
+      dto.setUser_id( ((Number) r[0]).longValue());
+      dto.setFull_name((String) r[1]);
+      dto.setRole_name((String) r[2]);
+      dto.setGeneration(((String) r[3]));
+      dto.setScholar_level_name((String) r[4]);
+      dto.setGrade_group((String) r[5]);
+      dto.setBalance((BigDecimal) r[6]);
+      list.add(dto);
+    }
+    return list;
+	}
 }

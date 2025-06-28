@@ -39,11 +39,9 @@ public class PaymentService {
   private final ObjectMapper objectMapper;
 
   public PaymentService(PaymentRepository paymentRepository,
-                        ObjectMapper objectMapper,
-                        @Value("${app.upload.dir}") String uploadDir) {
+                        ObjectMapper objectMapper) {
     this.paymentRepository = paymentRepository;
     this.objectMapper     = objectMapper;
-    this.uploadDir        = uploadDir;
   }
 
 
@@ -58,7 +56,7 @@ public class PaymentService {
   public Map<String,Object> getPaymentById(Long paymentId, String lang) throws SQLException {
     // schoolId, studentId, paymentRequestId all null, filters null, page=0,size=1
     PageResult<Map<String,Object>> page = paymentRepository.getPayments(
-      null, null, paymentId, null,
+      null,null, null, paymentId, null,
       null, null, null, null, null, null,
       null, null,
       lang,

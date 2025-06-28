@@ -134,106 +134,106 @@ public class PaymentRequestRepository {
 
   public BigDecimal getPendingByStudent(Long token_user_id, Long studentId) {
     if (studentId!=null) {
-        var sql = """
-          SELECT 
-          IFNULL(SUM(pr.amount),0) AS pending_total
-          FROM payment_requests pr
-          JOIN students st 
-            ON pr.student_id = st.student_id
-          -- get the student's user & school
-          JOIN users u_st 
-            ON st.user_id = u_st.user_id
-          -- get the caller's user, role & school
-          JOIN users u_call 
-            ON u_call.user_id = :token_user_id
-          JOIN roles r_call 
-            ON u_call.role_id = r_call.role_id
-          -- find if caller's school is related to the student's school
-          LEFT JOIN schools s_rel 
-            ON s_rel.related_school_id = u_call.school_id
-          AND s_rel.school_id         = u_st.school_id
-          WHERE pr.payment_status_id NOT IN (3,4,7,8)
-            AND pr.student_id          = :studentId
-            AND (
-                -- STUDENT may only see their own balance
-                ( r_call.name_en = 'Student' 
-                  AND u_call.user_id = u_st.user_id
-                )
-                OR
-                -- OTHERS must share the same school or be in a related school
-                ( r_call.name_en <> 'Student'
-                  AND ( u_call.school_id = u_st.school_id
-                      OR s_rel.related_school_id IS NOT NULL
-                      )
-                )
-            );
-          """;
+      var sql = """
+        SELECT 
+        IFNULL(SUM(pr.amount),0) AS pending_total
+        FROM payment_requests pr
+        JOIN students st 
+          ON pr.student_id = st.student_id
+        -- get the student's user & school
+        JOIN users u_st 
+          ON st.user_id = u_st.user_id
+        -- get the caller's user, role & school
+        JOIN users u_call 
+          ON u_call.user_id = :token_user_id
+        JOIN roles r_call 
+          ON u_call.role_id = r_call.role_id
+        -- find if caller's school is related to the student's school
+        LEFT JOIN schools s_rel 
+          ON s_rel.related_school_id = u_call.school_id
+        AND s_rel.school_id         = u_st.school_id
+        WHERE pr.payment_status_id NOT IN (3,4,7,8)
+          AND pr.student_id          = :studentId
+          AND (
+              -- STUDENT may only see their own balance
+              ( r_call.name_en = 'Student' 
+                AND u_call.user_id = u_st.user_id
+              )
+              OR
+              -- OTHERS must share the same school or be in a related school
+              ( r_call.name_en <> 'Student'
+                AND ( u_call.school_id = u_st.school_id
+                    OR s_rel.related_school_id IS NOT NULL
+                    )
+              )
+          );
+        """;
 
-        Object single = entityManager
-          .createNativeQuery(sql)
-          .setParameter("studentId", studentId)
-          .setParameter("token_user_id", token_user_id)
-          .getSingleResult();
+      Object single = entityManager
+        .createNativeQuery(sql)
+        .setParameter("studentId", studentId)
+        .setParameter("token_user_id", token_user_id)
+        .getSingleResult();
 
-        if (single == null) {
-          return BigDecimal.ZERO;
-        }
-        // MySQL may return BigDecimal or BigInteger
-        if (single instanceof Number n) {
-          return new BigDecimal(n.toString());
-        }
-        throw new IllegalStateException("Unexpected type for sum: " + single.getClass());
-      } else {
-        var sql = """
-          SELECT 
-          IFNULL(SUM(pr.amount),0) AS pending_total
-          FROM payment_requests pr
-          JOIN students st 
-            ON pr.student_id = st.student_id
-          -- get the student's user & school
-          JOIN users u_st 
-            ON st.user_id = u_st.user_id
-          -- get the caller's user, role & school
-          JOIN users u_call 
-            ON u_call.user_id = :token_user_id
-          JOIN roles r_call 
-            ON u_call.role_id = r_call.role_id
-          -- find if caller's school is related to the student's school
-          LEFT JOIN schools s_rel 
-            ON s_rel.related_school_id = u_call.school_id
-          AND s_rel.school_id         = u_st.school_id
-          WHERE pr.payment_status_id NOT IN (3,4,7,8)
-            AND (
-                -- STUDENT may only see their own balance
-                ( r_call.name_en = 'Student' 
-                  AND u_call.user_id = u_st.user_id
-                )
-                OR
-                -- OTHERS must share the same school or be in a related school
-                ( r_call.name_en <> 'Student'
-                  AND ( u_call.school_id = u_st.school_id
-                      OR s_rel.related_school_id IS NOT NULL
-                      )
-                )
-            );
-          """;
-
-        Object single = entityManager
-          .createNativeQuery(sql)
-          .setParameter("token_user_id", token_user_id)
-          .getSingleResult();
-
-        if (single == null) {
-          return BigDecimal.ZERO;
-        }
-        // MySQL may return BigDecimal or BigInteger
-        if (single instanceof Number n) {
-          return new BigDecimal(n.toString());
-        }
-        throw new IllegalStateException("Unexpected type for sum: " + single.getClass());
-
+      if (single == null) {
+        return BigDecimal.ZERO;
       }
+      // MySQL may return BigDecimal or BigInteger
+      if (single instanceof Number n) {
+        return new BigDecimal(n.toString());
+      }
+      throw new IllegalStateException("Unexpected type for sum: " + single.getClass());
+    } else {
+      var sql = """
+        SELECT 
+        IFNULL(SUM(pr.amount),0) AS pending_total
+        FROM payment_requests pr
+        JOIN students st 
+          ON pr.student_id = st.student_id
+        -- get the student's user & school
+        JOIN users u_st 
+          ON st.user_id = u_st.user_id
+        -- get the caller's user, role & school
+        JOIN users u_call 
+          ON u_call.user_id = :token_user_id
+        JOIN roles r_call 
+          ON u_call.role_id = r_call.role_id
+        -- find if caller's school is related to the student's school
+        LEFT JOIN schools s_rel 
+          ON s_rel.related_school_id = u_call.school_id
+        AND s_rel.school_id         = u_st.school_id
+        WHERE pr.payment_status_id NOT IN (3,4,7,8)
+          AND (
+              -- STUDENT may only see their own balance
+              ( r_call.name_en = 'Student' 
+                AND u_call.user_id = u_st.user_id
+              )
+              OR
+              -- OTHERS must share the same school or be in a related school
+              ( r_call.name_en <> 'Student'
+                AND ( u_call.school_id = u_st.school_id
+                    OR s_rel.related_school_id IS NOT NULL
+                    )
+              )
+          );
+        """;
+
+      Object single = entityManager
+        .createNativeQuery(sql)
+        .setParameter("token_user_id", token_user_id)
+        .getSingleResult();
+
+      if (single == null) {
+        return BigDecimal.ZERO;
+      }
+      // MySQL may return BigDecimal or BigInteger
+      if (single instanceof Number n) {
+        return new BigDecimal(n.toString());
+      }
+      throw new IllegalStateException("Unexpected type for sum: " + single.getClass());
+
     }
+  }
     
   @Transactional(Transactional.TxType.REQUIRED)
   public List<StudentPaymentRequestDTO> getStudentPaymentRequests(

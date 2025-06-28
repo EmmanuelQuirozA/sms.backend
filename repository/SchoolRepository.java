@@ -205,4 +205,27 @@ public class SchoolRepository {
         return result != null ? result.toString() : null;
     }
 
+    public String getSchoolImage(Long school_id) {
+    var sql = """
+        SELECT 
+        image
+        FROM schools
+        WHERE school_id=:school_id;
+    """;
+
+    Object single = entityManager
+    .createNativeQuery(sql)
+    .setParameter("school_id", school_id)
+    .getSingleResult();
+
+    if (single == null) {
+    return null;
+    }
+    // MySQL may return String
+    if (single instanceof String n) {
+    return n;
+    }
+    throw new IllegalStateException("Unexpected type for image: " + single.getClass());
+  }
+
 }

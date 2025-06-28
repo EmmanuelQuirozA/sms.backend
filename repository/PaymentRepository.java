@@ -39,6 +39,7 @@ public class PaymentRepository {
   private ObjectMapper objectMapper;
 
   public PageResult<Map<String,Object>> getPayments(
+		Long tokenUserId,
 		Long schoolId,
 		Long studentId,
 		Long paymentId,
@@ -58,7 +59,7 @@ public class PaymentRepository {
 		String order_by,
 		String order_dir
 	) throws SQLException {
-		String call = "{CALL getPayments(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}";
+		String call = "{CALL getPayments(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}";
 		List<Map<String,Object>> content = new ArrayList<>();
 		long totalCount = 0;
 
@@ -67,6 +68,7 @@ public class PaymentRepository {
 
 			int idx = 1;
 			// 1) the four IDs
+			if (tokenUserId != null) { stmt.setInt(idx++, tokenUserId.intValue()); } else { stmt.setNull(idx++, Types.INTEGER); }
 			if (schoolId != null) { stmt.setInt(idx++, schoolId.intValue()); } else { stmt.setNull(idx++, Types.INTEGER); }
 			if (studentId != null) { stmt.setInt(idx++, studentId.intValue()); } else { stmt.setNull(idx++, Types.INTEGER); }
 			if (paymentId != null) { stmt.setInt(idx++, paymentId.intValue()); } else { stmt.setNull(idx++, Types.INTEGER); }
@@ -159,10 +161,12 @@ public class PaymentRepository {
     q.setParameter("p_token_user_id", tokenUserId.intValue());
     q.setParameter("p_student_id", req.getStudent_id().intValue());
     q.setParameter("p_payment_concept_id", req.getPayment_concept_id());
-    q.setParameter("p_payment_month",
-        req.getPayment_month() != null
-            ? java.sql.Date.valueOf(req.getPayment_month())
-            : null);
+		String pm = req.getPayment_month();
+		Date   sqlPm = null;
+		if (pm != null && !pm.trim().isEmpty()) {
+			sqlPm = Date.valueOf(pm);
+		}
+		q.setParameter("p_payment_month", sqlPm);
     q.setParameter("p_amount", req.getAmount());
     q.setParameter("p_comments", req.getComments());
     q.setParameter("p_payment_request_id",

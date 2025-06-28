@@ -1,4 +1,4 @@
-package com.monarchsolutions.sms.dto.coffe;
+package com.monarchsolutions.sms.dto.coffee;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

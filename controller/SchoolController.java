@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -103,6 +104,22 @@ public class SchoolController {
             return ResponseEntity.ok(jsonResponse);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','SCHOOL_ADMIN','STUDENT')")
+    @GetMapping("/school-image")
+    public ResponseEntity<String> getSchoolImage(
+        @RequestHeader("Authorization") String authHeader
+    ) {
+        // 2) Extract the token and get userId
+        String token = authHeader.substring(7);
+        Long school_id = jwtUtil.extractSchoolId(token);
+        if (school_id!=null) {
+            String school_image = schoolService.getSchoolImage(school_id);
+            return ResponseEntity.ok(school_image);
+        } else {
+            return null;
         }
     }
     

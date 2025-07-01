@@ -137,6 +137,14 @@
 					</excludes>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>3.4.2</version>
+				<configuration>
+						<mainClass>com.monarchsolutions.sms.SchoolManagementSystemApplication</mainClass>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
